@@ -57,7 +57,10 @@ RationalTime _type_checked(py::object const& rhs, char const* op) {
 }
 
 void opentime_rationalTime_bindings(py::module m) {
-    py::class_<RationalTime>(m, "RationalTime")
+    py::class_<RationalTime>(m, "RationalTime", R"docstring(
+The RationalTime class represents a point in time at rt.value*(1/rt.rate) seconds.
+It can be rescaled into another :class:`~RationalTime`’s rate.
+)docstring")
         .def(py::init<double, double>(), "value"_a = 0, "rate"_a = 1)
         .def("is_invalid_time", &RationalTime::is_invalid_time)
         .def_property_readonly("value", &RationalTime::value)
@@ -78,13 +81,23 @@ void opentime_rationalTime_bindings(py::module m) {
                 return rt;
             }, "copier"_a = py::none())
         .def_static("duration_from_start_end_time", &RationalTime::duration_from_start_end_time,
-                    "start_time"_a, "end_time_exclusive"_a)
+                    "start_time"_a, "end_time_exclusive"_a, R"docstring(
+Compute the duration of samples from first to last. This is not the same as distance.
+
+For example, the duration of a clip from frame 10 to frame 15 is 6 frames. Result will be in the rate of start_time.
+)docstring")
         .def_static("duration_from_start_end_time_inclusive", &RationalTime::duration_from_start_end_time_inclusive,
                     "start_time"_a, "end_time_inclusive"_a)
         .def_static("is_valid_timecode_rate", &RationalTime::is_valid_timecode_rate, "rate"_a)
         .def_static("nearest_valid_timecode_rate", &RationalTime::nearest_valid_timecode_rate, "rate"_a,
             R"docstring(Returns the first valid timecode rate that has the least difference from the given value.)docstring")
-        .def_static("from_frames", &RationalTime::from_frames, "frame"_a, "rate"_a)
+        .def_static("from_frames", &RationalTime::from_frames, "frame"_a, "rate"_a, R"docstring(
+Turn a frame number and fps into a time object.
+
+:param frame: Frame number.
+:param fps: Frame-rate for the (:class:`~RationalTime`) instance.
+:returns: Instance for the frame and fps provided.
+)docstring")
         .def_static("from_seconds", static_cast<RationalTime (*)(double, double)> (&RationalTime::from_seconds), "seconds"_a, "rate"_a)
         .def_static("from_seconds", static_cast<RationalTime (*)(double)> (&RationalTime::from_seconds), "seconds"_a)
         .def("to_frames", (int (RationalTime::*)() const) &RationalTime::to_frames)
@@ -113,10 +126,20 @@ void opentime_rationalTime_bindings(py::module m) {
         .def("to_time_string", &RationalTime::to_time_string)
         .def_static("from_timecode", [](std::string s, double rate) {
                 return RationalTime::from_timecode(s, rate, ErrorStatusConverter());
-            }, "timecode"_a, "rate"_a)
+            }, "timecode"_a, "rate"_a, R"docstring(
+Convert a timecode string into a :class:`~RationalTime`.
+
+:param timecode_str: A colon-delimited timecode.
+:param rate: The frame-rate to calculate timecode in terms of.
+)docstring")
         .def_static("from_time_string", [](std::string s, double rate) {
                 return RationalTime::from_time_string(s, rate, ErrorStatusConverter());
-            }, "time_string"_a, "rate"_a)
+            }, "time_string"_a, "rate"_a, R"docstring(
+Convert a time with microseconds string into a :class:`~RationalTime`.
+
+:param time_string: A ``HH:MM:ss.ms`` time.
+:param rate: The frame-rate to calculate timecode in terms of.
+)docstring")
         .def("__str__", &opentime_python_str)
         .def("__repr__", &opentime_python_repr)
         .def(- py::self)
