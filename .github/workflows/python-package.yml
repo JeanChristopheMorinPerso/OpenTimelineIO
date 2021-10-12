@@ -43,16 +43,16 @@ jobs:
         sudo apt-get install lcov
     - name: Install python build dependencies
       run: |
-        python -m pip install --upgrade pip setuptools wheel flake8>=3.5 check-manifest
+        python -m pip install --upgrade pip setuptools wheel flake8>=3.5 check-manifest coverage
     - name: install mock for python 2.7 tests only
       if: matrix.python-version == 2.7
       run: python -m pip install --upgrade mock
-    - name: Run check-manifest and lint check
-      run: make ci-prebuild
-    - name: Build and Install
-      run: |
-        # compile and install into virtualenv/virtual machine (verbosely)
-        pip install .[dev] -v
+    # - name: Run check-manifest and lint check
+    #   run: make ci-prebuild
+    # - name: Build and Install
+    #   run: |
+    #     # compile and install into virtualenv/virtual machine (verbosely)
+    #     pip install .[dev] -v
     - name: Run tests w/ python coverage
       run: make ci-postbuild
     # (only on ubuntu/pyhton3.7)
