@@ -1,3 +1,6 @@
+codecov:
+  notify: {}
+
 coverage:
   precision: 2
   round: down
