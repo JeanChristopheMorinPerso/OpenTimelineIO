@@ -64,6 +64,7 @@ jobs:
         flags: unittests
         name: opentimelineio-codecov
         fail_ci_if_error: true
+        verbose: true
 
   package_wheels:
     needs: build
