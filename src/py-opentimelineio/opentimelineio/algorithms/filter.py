@@ -2,12 +2,17 @@
 # Copyright Contributors to the OpenTimelineIO project
 
 """Algorithms for filtering OTIO files.  """
+from __future__ import annotations
 
 import copy
+from typing import TYPE_CHECKING
 
 from .. import (
     schema
 )
+
+if TYPE_CHECKING:
+    from typing import Union, Callable, Any
 
 
 def _is_in(thing, container):
@@ -19,10 +24,10 @@ def _isinstance_in(child, typelist):
 
 
 def filtered_composition(
-    root,
-    unary_filter_fn,
-    types_to_prune=None,
-):
+    root: 'Union[schema.Timeline, schema.Track]',
+    unary_filter_fn: 'Callable',
+    types_to_prune: list[type]=None,
+) -> 'Union[schema.Timeline, schema.Track]':
     """
     Filter a deep copy of root (and children) with ``unary_filter_fn``.
 
@@ -95,7 +100,7 @@ def filtered_composition(
     # deep copy everything
     mutable_object = copy.deepcopy(root)
 
-    prune_list = set()
+    prune_list: set[Any] = set()
 
     header_list = [mutable_object]
 

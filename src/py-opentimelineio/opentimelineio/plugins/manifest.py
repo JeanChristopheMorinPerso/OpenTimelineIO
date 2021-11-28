@@ -2,10 +2,11 @@
 # Copyright Contributors to the OpenTimelineIO project
 
 """OTIO Python Plugin Manifest system: locates plugins to OTIO."""
-
+from __future__ import annotations
 import inspect
 import logging
 import os
+from typing import TYPE_CHECKING
 
 # In some circumstances pkg_resources has bad performance characteristics.
 # Using the envirionment variable: $OTIO_DISABLE_PKG_RESOURCE_PLUGINS disables
@@ -24,6 +25,13 @@ from .. import (
     exceptions,
 )
 
+if TYPE_CHECKING:
+    from ..adapters import Adapter
+    from types import ModuleType
+    from opentimelineio.schema import SchemaDef
+    from ..hooks import HookScript
+    from ..media_linker import MediaLinker
+
 
 # for tracking what kinds of plugins the manifest system supports
 OTIO_PLUGIN_TYPES = [
@@ -36,7 +44,7 @@ OTIO_PLUGIN_TYPES = [
 ]
 
 
-def manifest_from_file(filepath):
+def manifest_from_file(filepath: str) -> 'Manifest':
     """Read the .json file at filepath into a :py:class:`Manifest` object."""
 
     result = core.deserialize_json_from_file(filepath)
@@ -46,7 +54,7 @@ def manifest_from_file(filepath):
     return result
 
 
-def manifest_from_string(input_string):
+def manifest_from_string(input_string: str) -> 'Manifest':
     """Deserialize the json string into a manifest object."""
 
     result = core.deserialize_json_from_string(input_string)
@@ -85,7 +93,7 @@ class Manifest(core.SerializableObject):
         self.adapters = []
         self.schemadefs = []
         self.media_linkers = []
-        self.source_files = []
+        self.source_files: list[str] = []
 
         # hook system stuff
         self.hooks = {}
@@ -93,27 +101,27 @@ class Manifest(core.SerializableObject):
 
         self.version_manifests = {}
 
-    adapters = core.serializable_field(
+    adapters = list[Adapter] = core.serializable_field(
         "adapters",
         type([]),
         "Adapters this manifest describes."
     )
-    schemadefs = core.serializable_field(
+    schemadefs: list[SchemaDef] = core.serializable_field(
         "schemadefs",
         type([]),
         "Schemadefs this manifest describes."
     )
-    media_linkers = core.serializable_field(
+    media_linkers: list[MediaLinker] = core.serializable_field(
         "media_linkers",
         type([]),
         "Media Linkers this manifest describes."
     )
-    hooks = core.serializable_field(
+    hooks: dict[str, list[str]] = core.serializable_field(
         "hooks",
         type({}),
         "Hooks that hooks scripts can be attached to."
     )
-    hook_scripts = core.serializable_field(
+    hook_scripts: list[HookScript] = core.serializable_field(
         "hook_scripts",
         type([]),
         "Scripts that can be attached to hooks."
@@ -124,7 +132,7 @@ class Manifest(core.SerializableObject):
         "Sets of versions to downgrade schemas to."
     )
 
-    def extend(self, another_manifest):
+    def extend(self, another_manifest: Manifest):
         """
         Aggregate another manifest's plugins into this one.
 
@@ -156,7 +164,7 @@ class Manifest(core.SerializableObject):
 
         self.source_files.extend(another_manifest.source_files)
 
-    def _update_plugin_source(self, path):
+    def _update_plugin_source(self, path: str):
         """Set the source file path for the manifest."""
 
         for thing in (
@@ -167,7 +175,7 @@ class Manifest(core.SerializableObject):
         ):
             thing._json_path = path
 
-    def from_filepath(self, suffix):
+    def from_filepath(self, suffix: str) -> Adapter:
         """Return the adapter object associated with a given file suffix."""
 
         for adapter in self.adapters:
@@ -175,7 +183,7 @@ class Manifest(core.SerializableObject):
                 return adapter
         raise exceptions.NoKnownAdapterForExtensionError(suffix)
 
-    def adapter_module_from_suffix(self, suffix):
+    def adapter_module_from_suffix(self, suffix: str) -> ModuleType:
         """Return the adapter module associated with a given file suffix."""
 
         adp = self.from_filepath(suffix)
@@ -183,7 +191,7 @@ class Manifest(core.SerializableObject):
 
     # @TODO: (breaking change) this should search all plugins by default instead
     #        of just adapters
-    def from_name(self, name, kind_list="adapters"):
+    def from_name(self, name: str, kind_list: str="adapters") -> Manifest:
         """Return the plugin object associated with a given plugin name."""
 
         for thing in getattr(self, kind_list):
@@ -199,13 +207,13 @@ class Manifest(core.SerializableObject):
             )
         )
 
-    def adapter_module_from_name(self, name):
+    def adapter_module_from_name(self, name: str) -> ModuleType:
         """Return the adapter module associated with a given adapter name."""
 
         adp = self.from_name(name)
         return adp.module()
 
-    def schemadef_module_from_name(self, name):
+    def schemadef_module_from_name(self, name: str) -> ModuleType:
         """Return the schemadef module associated with a given schemadef name."""
 
         adp = self.from_name(name, kind_list="schemadefs")
@@ -215,7 +223,7 @@ class Manifest(core.SerializableObject):
 _MANIFEST = None
 
 
-def load_manifest():
+def load_manifest() -> Manifest:
     """Walk the plugin manifest discovery systems and accumulate manifests.
 
     The order of loading (and precedence) is:
@@ -349,7 +357,7 @@ def load_manifest():
     return result
 
 
-def ActiveManifest(force_reload=False):
+def ActiveManifest(force_reload: bool=False) -> Manifest:
     """Return the fully resolved plugin manifest."""
 
     global _MANIFEST

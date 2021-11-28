@@ -2,12 +2,13 @@
 # Copyright Contributors to the OpenTimelineIO project
 
 """Base class for OTIO plugins that are exposed by manifests."""
-
+from __future__ import annotations
 import os
 import imp
 import inspect
 import collections
 import copy
+from typing import TYPE_CHECKING
 
 from .. import (
     core,
@@ -18,9 +19,12 @@ from . import (
     manifest
 )
 
+if TYPE_CHECKING:
+    from typing import Union, Any
+    from types import ModuleType
 
-def plugin_info_map():
-    result = {}
+def plugin_info_map() -> 'dict[str, Union[list[str], dict[Any, Any]]]':
+    result: 'dict[str, Union[list[str], dict[Any, Any]]]' = {}
     active_manifest = manifest.ActiveManifest()
     for pt in manifest.OTIO_PLUGIN_TYPES:
         # hooks get handled specially, see below
@@ -55,17 +59,17 @@ class PythonPlugin(core.SerializableObject):
 
     def __init__(
         self,
-        name=None,
-        filepath=None,
+        name: str=None,
+        filepath: str=None,
     ):
         core.SerializableObject.__init__(self)
         self.name = name
         self.filepath = filepath
-        self._json_path = None
-        self._module = None
+        self._json_path: str = None
+        self._module: 'ModuleType' = None
 
-    name = core.serializable_field("name", doc="Adapter name.")
-    filepath = core.serializable_field(
+    name: str = core.serializable_field("name", doc="Adapter name.")
+    filepath: str = core.serializable_field(
         "filepath",
         str,
         doc=(
@@ -74,7 +78,7 @@ class PythonPlugin(core.SerializableObject):
         )
     )
 
-    def plugin_info_map(self):
+    def plugin_info_map(self) -> dict[str, str]:
         """Returns a map with information about the plugin."""
 
         result = collections.OrderedDict()
@@ -86,7 +90,7 @@ class PythonPlugin(core.SerializableObject):
 
         return result
 
-    def module_abs_path(self):
+    def module_abs_path(self) -> str:
         """Return an absolute path to the module implementing this adapter."""
 
         filepath = self.filepath
@@ -104,7 +108,7 @@ class PythonPlugin(core.SerializableObject):
 
         return filepath
 
-    def _imported_module(self, namespace):
+    def _imported_module(self, namespace: str) -> 'ModuleType':
         """Load the module this plugin points at."""
 
         pyname = os.path.splitext(os.path.basename(self.module_abs_path()))[0]
@@ -123,7 +127,7 @@ class PythonPlugin(core.SerializableObject):
 
             return mod
 
-    def module(self):
+    def module(self) -> 'ModuleType':
         """Return the module object for this adapter. """
 
         if not self._module:
@@ -131,7 +135,7 @@ class PythonPlugin(core.SerializableObject):
 
         return self._module
 
-    def _execute_function(self, func_name, **kwargs):
+    def _execute_function(self, func_name: str, **kwargs) -> 'Any':
         """Execute func_name on this adapter with error checking."""
 
         # collects the error handling into a common place.

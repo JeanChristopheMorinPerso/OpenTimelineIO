@@ -16,15 +16,20 @@ To get context information, they can inspect the metadata on the clip and on
 the media reference. The :meth:`.Composable.parent` method can be used to find the containing
 track if metadata is stored there.
 """
-
+from __future__ import annotations
 import os
 import inspect
+from typing import TYPE_CHECKING
 
 from . import (
     exceptions,
     plugins,
     core,
 )
+
+if TYPE_CHECKING:
+    from .schema import Clip
+    from typing import Optional
 
 
 class MediaLinkingPolicy:
@@ -34,17 +39,17 @@ class MediaLinkingPolicy:
 
 
 # @TODO: wrap this up in the plugin system somehow?  automatically generate?
-def available_media_linker_names():
+def available_media_linker_names() -> list[str]:
     """Return a string list of the available media linker plugins."""
 
     return [str(adp.name) for adp in plugins.ActiveManifest().media_linkers]
 
 
-def from_name(name):
+def from_name(name: str) -> 'Optional[MediaLinker]':
     """Fetch the media linker object by the name of the adapter directly."""
 
     if name == MediaLinkingPolicy.ForceDefaultLinker or not name:
-        name = os.environ.get("OTIO_DEFAULT_MEDIA_LINKER", None)
+        name = os.environ.get("OTIO_DEFAULT_MEDIA_LINKER", "")
 
     if not name:
         return None
@@ -64,7 +69,7 @@ def from_name(name):
         )
 
 
-def default_media_linker():
+def default_media_linker() -> str:
     try:
         return os.environ['OTIO_DEFAULT_MEDIA_LINKER']
     except KeyError:
@@ -74,8 +79,8 @@ def default_media_linker():
 
 
 def linked_media_reference(
-    target_clip,
-    media_linker_name=MediaLinkingPolicy.ForceDefaultLinker,
+    target_clip: Clip,
+    media_linker_name: str=MediaLinkingPolicy.ForceDefaultLinker,
     media_linker_argument_map=None
 ):
     media_linker = from_name(media_linker_name)
@@ -100,12 +105,12 @@ class MediaLinker(plugins.PythonPlugin):
 
     def __init__(
         self,
-        name=None,
-        filepath=None,
+        name: str=None,
+        filepath: str=None,
     ):
         super().__init__(name, filepath)
 
-    def link_media_reference(self, in_clip, media_linker_argument_map=None):
+    def link_media_reference(self, in_clip: Clip, media_linker_argument_map: dict=None):
         media_linker_argument_map = media_linker_argument_map or {}
 
         return self._execute_function(
@@ -114,10 +119,10 @@ class MediaLinker(plugins.PythonPlugin):
             media_linker_argument_map=media_linker_argument_map
         )
 
-    def is_default_linker(self):
+    def is_default_linker(self) -> bool:
         return os.environ.get("OTIO_DEFAULT_MEDIA_LINKER", "") == self.name
 
-    def plugin_info_map(self):
+    def plugin_info_map(self) -> dict[str, str]:
         """Adds extra adapter-specific information to call to the parent fn."""
 
         result = super().plugin_info_map()

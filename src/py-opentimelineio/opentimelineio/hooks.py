@@ -1,10 +1,16 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright Contributors to the OpenTimelineIO project
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from . import (
     plugins,
     core,
 )
+
+if TYPE_CHECKING:
+    from .schema import Timeline
 
 __doc__ = """
 HookScripts are plugins that run at defined points ("Hooks").
@@ -82,14 +88,14 @@ class HookScript(plugins.PythonPlugin):
 
     def __init__(
         self,
-        name=None,
-        filepath=None,
+        name: str=None,
+        filepath: str=None,
     ):
         """HookScript plugin constructor."""
 
         super().__init__(name, filepath)
 
-    def run(self, in_timeline, argument_map={}):
+    def run(self, in_timeline: 'Timeline', argument_map={}):
         """Run the hook_function associated with this plugin."""
 
         # @TODO: should in_timeline be passed in place?  or should a copy be
@@ -118,24 +124,24 @@ class HookScript(plugins.PythonPlugin):
         )
 
 
-def names():
+def names() -> list[str]:
     """Return a list of all the registered hooks."""
 
-    return plugins.ActiveManifest().hooks.keys()
+    return list(plugins.ActiveManifest().hooks.keys())
 
 
-def available_hookscript_names():
+def available_hookscript_names() -> list[str]:
     """Return the names of HookScripts that have been registered."""
 
     return [hs.name for hs in plugins.ActiveManifest().hook_scripts]
 
 
-def available_hookscripts():
+def available_hookscripts() -> list[HookScript]:
     """Return the HookScripts objects that have been registered."""
     return plugins.ActiveManifest().hook_scripts
 
 
-def scripts_attached_to(hook):
+def scripts_attached_to(hook: str) -> list[str]:
     """Return an editable list of all the hook scripts that are attached to
     the specified hook, in execution order.  Changing this list will change the
     order that scripts run in, and deleting a script will remove it from
@@ -146,7 +152,7 @@ def scripts_attached_to(hook):
     return plugins.ActiveManifest().hooks[hook]
 
 
-def run(hook, tl, extra_args=None):
+def run(hook: str, tl: Timeline, extra_args=None):
     """Run all the scripts associated with hook, passing in tl and extra_args.
 
     Will return the return value of the last hook script.

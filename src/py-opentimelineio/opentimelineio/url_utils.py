@@ -12,7 +12,7 @@ from urllib import (
 import pathlib
 
 
-def url_from_filepath(fpath):
+def url_from_filepath(fpath: str) -> str:
     """Convert a filesystem path to an url in a portable way using / path sep"""
 
     try:
@@ -36,7 +36,7 @@ def url_from_filepath(fpath):
         )
 
 
-def filepath_from_url(urlstr):
+def filepath_from_url(urlstr: str):
     """ Take a url and return a filepath """
 
     parsed_result = urlparse.urlparse(urlstr)

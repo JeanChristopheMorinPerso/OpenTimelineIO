@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright Contributors to the OpenTimelineIO project
+from typing import Optional
 
 from . _opentime import ( # noqa
     RationalTime,
@@ -38,7 +39,7 @@ duration_from_start_end_time_inclusive = (
 )
 
 
-def to_timecode(rt, rate=None, drop_frame=None):
+def to_timecode(rt: RationalTime, rate: float=None, drop_frame: Optional[bool]=None) -> str:
     """Convert a :class:`~RationalTime` into a timecode string."""
     return (
         rt.to_timecode()
@@ -47,17 +48,17 @@ def to_timecode(rt, rate=None, drop_frame=None):
     )
 
 
-def to_frames(rt, rate=None):
+def to_frames(rt: RationalTime, rate: float=None) -> int:
     """Turn a :class:`~RationalTime` into a frame number."""
     return rt.to_frames() if rate is None else rt.to_frames(rate)
 
 
-def to_seconds(rt):
+def to_seconds(rt: RationalTime):
     """Convert a :class:`~RationalTime` into float seconds"""
     return rt.to_seconds()
 
 
-def to_time_string(rt):
+def to_time_string(rt: RationalTime):
     """
     Convert this timecode to time as used by ffmpeg, formatted as
     ``hh:mm:ss`` where ss is an integer or decimal number.

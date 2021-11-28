@@ -6,10 +6,11 @@
 For information on writing adapters, please consult:
 https://opentimelineio.readthedocs.io/en/latest/tutorials/write-an-adapter.html # noqa
 """
-
+from __future__ import annotations
 import inspect
 import collections
 import copy
+from typing import TYPE_CHECKING
 
 from .. import (
     core,
@@ -17,6 +18,10 @@ from .. import (
     media_linker,
     hooks,
 )
+
+if TYPE_CHECKING:
+    from ..schema import Timeline
+    from typing import Optional
 
 
 @core.register_type
@@ -44,9 +49,9 @@ class Adapter(plugins.PythonPlugin):
 
     def __init__(
         self,
-        name=None,
-        filepath=None,
-        suffixes=None
+        name: str=None,
+        filepath: str=None,
+        suffixes: list[str]=None
     ):
         plugins.PythonPlugin.__init__(
             self,
@@ -56,13 +61,13 @@ class Adapter(plugins.PythonPlugin):
 
         self.suffixes = suffixes or []
 
-    suffixes = core.serializable_field(
+    suffixes: list[str] = core.serializable_field(
         "suffixes",
         type([]),
         doc="File suffixes associated with this adapter."
     )
 
-    def has_feature(self, feature_string):
+    def has_feature(self, feature_string: str) -> bool:
         """
         return true if adapter supports feature_string, which must be a key
         of the _FEATURE_MAP dictionary.
@@ -83,12 +88,12 @@ class Adapter(plugins.PythonPlugin):
 
     def read_from_file(
         self,
-        filepath,
+        filepath: str,
         media_linker_name=media_linker.MediaLinkingPolicy.ForceDefaultLinker,
-        media_linker_argument_map=None,
-        hook_function_argument_map=None,
+        media_linker_argument_map: 'Optional[dict]'=None,
+        hook_function_argument_map: 'Optional[dict]'=None,
         **adapter_argument_map
-    ):
+    ) -> 'Timeline':
         """Execute the read_from_file function on this adapter.
 
         If read_from_string exists, but not read_from_file, execute that with

@@ -15,6 +15,7 @@ from .. _otio import (
     PyAny
 )
 
+from typing import Any
 
 SUPPORTED_VALUE_TYPES = (
     "int",
@@ -34,7 +35,7 @@ def _is_str(v):
     return isinstance(v, str)
 
 
-def _is_nonstring_sequence(v):
+def _is_nonstring_sequence(v: Any):
     return isinstance(v, collections.abc.Sequence) and not _is_str(v)
 
 

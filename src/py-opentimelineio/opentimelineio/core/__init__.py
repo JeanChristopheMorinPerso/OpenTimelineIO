@@ -126,7 +126,7 @@ def serialize_json_to_file(
     )
 
 
-def register_type(classobj, schemaname=None):
+def register_type(classobj, schemaname: str=None):
     """Decorator for registering a SerializableObject type
 
     Example:
@@ -199,7 +199,7 @@ def upgrade_function_for(cls, version_to_upgrade_to):
     return decorator_func
 
 
-def downgrade_function_from(cls, version_to_downgrade_from):
+def downgrade_function_from(name: str, required_type: type=None, doc: str=None) -> property:
     """
     Decorator for identifying schema class downgrade functions.
 
@@ -299,7 +299,7 @@ def serializable_field(name, required_type=None, doc=None):
     return property(getter, setter, doc=doc)
 
 
-def deprecated_field():
+def deprecated_field() -> property:
     """For marking attributes on a SerializableObject deprecated."""
 
     def getter(self):
