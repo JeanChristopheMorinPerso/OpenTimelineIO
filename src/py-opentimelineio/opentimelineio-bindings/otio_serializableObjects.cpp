@@ -98,11 +98,21 @@ namespace {
         }
         return l;
     }
+
+    AnyDictionaryProxy* get_metadata_proxy(SOWithMetadata* so) {
+        auto ptr = so->metadata().get_or_create_mutation_stamp();
+        return (AnyDictionaryProxy*)(ptr);
+    }
+
+    template<typename T>
+    std::vector<SerializableObject*> get_children(T* t) {
+        return (std::vector<SerializableObject*>) t->children();
+    }
+
 }
 
-/*
 template <typename T> static std::string repr(T const& value) {
-    return pybind11::cast<std::string>(pybind11::repr(pybind11::cast(value)));
+    return py::repr(py::cast(value));
 }
 
 template <typename T> static std::string repr(optional<T> const& value) {
@@ -114,8 +124,16 @@ static std::string repr(AnyDictionary& value) {
     return repr(proxy);
 }
 
+static std::string repr(std::vector<SerializableCollection::Retainer<SerializableObject>>& value) {
+    std::vector<SerializableObject*> l;
+    for (const auto& child : value) {
+        l.push_back(child);
+    }
+    return repr(l);
+}
+
 template <typename T> static std::string str(T const& value) {
-    return pybind11::cast<std::string>(pybind11::str(pybind11::cast(value)));
+    return py::str(py::cast(value));
 }
 
 template <typename T> static std::string str(optional<T> const& value) {
@@ -126,7 +144,14 @@ static std::string str(AnyDictionary& value) {
     auto proxy = (AnyDictionaryProxy*) value.get_or_create_mutation_stamp();
     return str(proxy);
 }
-*/
+
+static std::string str(std::vector<SerializableCollection::Retainer<SerializableObject>>& value) {
+    std::vector<SerializableObject*> l;
+    for (const auto& child : value) {
+        l.push_back(child);
+    }
+    return str(l);
+}
 
 template <typename CONTAINER, typename ITEM>
 class ContainerIterator {
@@ -192,8 +217,7 @@ static void define_bases1(py::module m) {
             py::arg_v("name"_a = std::string()),
             py::arg_v("metadata"_a = py::none()))
         .def_property_readonly("metadata", [](SOWithMetadata* s) {
-                auto ptr = s->metadata().get_or_create_mutation_stamp();
-            return (AnyDictionaryProxy*)(ptr); }, py::return_value_policy::take_ownership)
+                return get_metadata_proxy(s); }, py::return_value_policy::take_ownership)
         .def_property("name", [](SOWithMetadata* so) {
                 return plain_string(so->name());
             }, &SOWithMetadata::set_name);
@@ -225,7 +249,25 @@ The marked range may have a zero duration. The marked range is in the owning ite
              "color"_a = std::string(Marker::Color::red),
              py::arg_v("metadata"_a = py::none()))
         .def_property("color", &Marker::color, &Marker::set_color, "Color string for this marker (for example: 'RED'), based on the :class:`~Color` enum.")
-        .def_property("marked_range", &Marker::marked_range, &Marker::set_marked_range, "Range this marker applies to, relative to the :class:`.Item` this marker is attached to (e.g. the :class:`.Clip` or :class:`.Track` that owns this marker).");
+        .def_property("marked_range", &Marker::marked_range, &Marker::set_marked_range, "Range this marker applies to, relative to the :class:`.Item` this marker is attached to (e.g. the :class:`.Clip` or :class:`.Track` that owns this marker).")
+        .def("__repr__", [](Marker* marker) {
+            return "opentimelineio.schema.{}(name=\"{}\", marked_range={}, color={}, metadata={})"_s.format(
+                py::cast(marker).attr("__class__").attr("__name__"),
+                marker->name(),
+                repr(marker->marked_range()),
+                repr(marker->color()),
+                repr(marker->metadata())
+            );
+        })
+        .def("__str__", [](Marker* marker) {
+            return "opentimelineio.schema.{}({}, {}, {}, {})"_s.format(
+                py::cast(marker).attr("__class__").attr("__name__"),
+                marker->name(),
+                str(marker->marked_range()),
+                str(marker->color()),
+                str(marker->metadata())
+            );
+        });
 
     py::class_<Marker::Color>(marker_class, "Color")
         .def_property_readonly_static("PINK", [](py::object /* self */) { return Marker::Color::pink; })
@@ -294,8 +336,23 @@ A :class:`~SerializableCollection` is useful for serializing multiple timelines,
             }, "search_range"_a = nullopt)
         .def("children_if", [](SerializableCollection* t, py::object descended_from_type, optional<TimeRange> const& search_range) {
                 return children_if(t, descended_from_type, search_range);
-            }, "descended_from_type"_a = py::none(), "search_range"_a = nullopt);
-
+            }, "descended_from_type"_a = py::none(), "search_range"_a = nullopt)
+        .def("__repr__", [](SerializableCollection* c) {
+            return "opentimelineio.schema.{}(name=\"{}\", children={}, metadata={})"_s.format(
+                py::cast(c).attr("__class__").attr("__name__"),
+                c->name(),
+                repr(c->children()),
+                repr(c->metadata())
+            );
+        })
+        .def("__str__", [](SerializableCollection* c) {
+            return "opentimelineio.schema.{}({}, {}, {})"_s.format(
+                py::cast(c).attr("__class__").attr("__name__"),
+                c->name(),
+                str(c->children()),
+                str(c->metadata())
+            );
+        });
 }
 
 static void define_items_and_compositions(py::module m) {
@@ -352,7 +409,32 @@ An object that can be composed within a :class:`~Composition` (such as :class:`~
             }, "time_range"_a, "to_item"_a)
         .def_property_readonly("available_image_bounds", [](Item* item) {
             return item->available_image_bounds(ErrorStatusHandler());
-            });
+        })
+        .def("__repr__", [](Item* item) {
+            // "core" if self.__class__ is _otio.Item else "schema",
+            return "opentimelineio.core.{}(name=\"{}\", source_range={}, effects={}, markers={}, enabled={}, metadata={})"_s.format(
+                py::cast(item).attr("__class__").attr("__name__"),
+                item->name(),
+                repr(item->source_range()),
+                repr((EffectVectorProxy*) &item->effects()),
+                repr((MarkerVectorProxy*) &item->markers()),
+                repr(item->enabled()),
+                repr(item->metadata())
+            );
+        })
+        // Doesn't work well... Effects are returned as repr instead of str...
+        .def("__str__", [](Item* item) {
+            // "core" if self.__class__ is _otio.Item else "schema",
+            return "opentimelineio.core.{}({}, {}, {}, {}, {}, {})"_s.format(
+                py::cast(item).attr("__class__").attr("__name__"),
+                item->name(),
+                str(item->source_range()),
+                str((EffectVectorProxy*) &item->effects()),
+                str((MarkerVectorProxy*) &item->markers()),
+                str(item->enabled()),
+                str(item->metadata())
+            );
+        });
 
     auto transition_class =
         py::class_<Transition, Composable, managing_ptr<Transition>>(m, "Transition", py::dynamic_attr(), "Represents a transition between the two adjacent items in a :class:`.Track`. For example, a cross dissolve or wipe.")
@@ -378,7 +460,27 @@ An object that can be composed within a :class:`~Composition` (such as :class:`~
             }, "Find and return the range of this item in the parent.")
         .def("trimmed_range_in_parent", [](Transition* t) {
             return t->trimmed_range_in_parent(ErrorStatusHandler());
-            }, "Find and return the timmed range of this item in the parent.");
+            }, "Find and return the timmed range of this item in the parent.")
+        .def("__repr__", [](Transition* t) {
+            return "opentimelineio.schema.{}(name=\"{}\", transition_type={}, in_offset={}, out_offset={}, metadata={})"_s.format(
+                py::cast(t).attr("__class__").attr("__name__"),
+                repr(t->name()),
+                repr(t->transition_type()),
+                repr(t->in_offset()),
+                repr(t->out_offset()),
+                repr(t->metadata())
+            );
+        })
+        .def("__str__", [](Transition* t) {
+            return "opentimelineio.schema.{}({}, {}, {}, {}, {})"_s.format(
+                py::cast(t).attr("__class__").attr("__name__"),
+                str(t->name()),
+                str(t->transition_type()),
+                str(t->in_offset()),
+                str(t->out_offset()),
+                str(t->metadata())
+            );
+        });
 
     py::class_<Transition::Type>(transition_class, "Type", R"docstring(
 Enum encoding types of transitions.
@@ -411,7 +513,27 @@ Other effects are handled by the :class:`Effect` class.
              "duration"_a = RationalTime(),
              "effects"_a = py::none(),
              "markers"_a = py::none(),
-             py::arg_v("metadata"_a = py::none()));
+             py::arg_v("metadata"_a = py::none()))
+        .def("__repr__", [](Gap* gap) {
+            return "opentimelineio.schema.{}(name=\"{}\", source_range={}, effects={}, markers={}, metadata={})"_s.format(
+                py::cast(gap).attr("__class__").attr("__name__"),
+                repr(gap->name()),
+                repr(gap->source_range()),
+                repr((EffectVectorProxy*) &gap->effects()),
+                repr((MarkerVectorProxy*) &gap->effects()),
+                repr(gap->metadata())
+            );
+        })
+        .def("__str__", [](Gap* gap) {
+            return "opentimelineio.schema.{}({}, {}, {}, {}, {})"_s.format(
+                py::cast(gap).attr("__class__").attr("__name__"),
+                str(gap->name()),
+                str(gap->source_range()),
+                str((EffectVectorProxy*) &gap->effects()),
+                str((MarkerVectorProxy*) &gap->effects()),
+                str(gap->metadata())
+            );
+        });
 
     auto clip_class = py::class_<Clip, Item, managing_ptr<Clip>>(m, "Clip", py::dynamic_attr(), R"docstring(
 A :class:`~Clip` is a segment of editable media (usually audio or video).
@@ -438,7 +560,25 @@ Contains a :class:`.MediaReference` and a trim on that media reference.
         .def("media_references", &Clip::media_references) 
         .def("set_media_references", [](Clip* clip, Clip::MediaReferences const& media_references, std::string const& new_active_key) {
             clip->set_media_references(media_references, new_active_key, ErrorStatusHandler());
-            });
+            })
+        .def("__repr__", [](Clip* c) {
+            return "opentimelineio.schema.{}(name=\"{}\", media_reference={}, source_range={}, metadata={})"_s.format(
+                py::cast(c).attr("__class__").attr("__name__"),
+                repr(c->name()),
+                repr(c->media_reference()),
+                repr(c->source_range()),
+                repr(c->metadata())
+            );
+        })
+        .def("__str__", [](Clip* c) {
+            return "opentimekineio.schema.{}({}, {}, {}, {})"_s.format(
+                py::cast(c).attr("__class__").attr("__name__"),
+                str(c->name()),
+                str(c->media_reference()),
+                str(c->source_range()),
+                str(c->metadata())
+            );
+        });
 
     using CompositionIterator = ContainerIterator<Composition, Composable*>;
     py::class_<CompositionIterator>(m, "CompositionIterator")
@@ -531,7 +671,25 @@ Should be subclassed (for example by :class:`.Track` and :class:`.Stack`), not u
             })
         .def("__iter__", [](Composition* c) {
                 return new CompositionIterator(c);
-            });
+            })
+        .def("__repr__", [](Composition* c) {
+            return "opentimelineio.core.{}(name=\"{}\", children={}, source_range={}, metadata={})"_s.format(
+                py::cast(c).attr("__class__").attr("__name__"),
+                repr(c->name()),
+                repr(c->children()),
+                repr(c->source_range()),
+                repr(c->metadata())
+            );
+        })
+        .def("__str__", [](Composition* c) {
+            return "opentimelineio.core.{}({}, {}, {}, {})"_s.format(
+                py::cast(c).attr("__class__").attr("__name__"),
+                str(c->name()),
+                str(c->children()),
+                str(c->source_range()),
+                str(c->metadata())
+            );
+        });
 
     composable_class
         .def(py::init([](std::string const& name,
@@ -542,7 +700,21 @@ Should be subclassed (for example by :class:`.Track` and :class:`.Stack`), not u
              py::arg_v("metadata"_a = py::none()))
         .def("parent", &Composable::parent)
         .def("visible", &Composable::visible)
-        .def("overlapping", &Composable::overlapping);
+        .def("overlapping", &Composable::overlapping)
+        .def("__repr__", [](Composable* c) {
+            return "opentimelineio.core.{}(name=\"{}\", composable={})"_s.format(
+                py::cast(c).attr("__class__").attr("__name__"),
+                c->name(),
+                repr(c)
+            );
+        })
+        .def("__str__", [](Composable* c) {
+            return "opentimelineio.core.{}({}, {})"_s.format(
+                py::cast(c).attr("__class__").attr("__name__"),
+                c->name(),
+                str(c)
+            );
+        });
 
     auto track_class = py::class_<Track, Composition, managing_ptr<Track>>(m, "Track", py::dynamic_attr());
 
@@ -577,7 +749,25 @@ Should be subclassed (for example by :class:`.Track` and :class:`.Stack`), not u
             }, "item"_a, "policy"_a = Track::NeighborGapPolicy::never)
         .def("clip_if", [](Track* t, optional<TimeRange> const& search_range, bool shallow_search) {
                 return clip_if(t, search_range, shallow_search);
-            }, "search_range"_a = nullopt, "shallow_search"_a = false);
+            }, "search_range"_a = nullopt, "shallow_search"_a = false)
+        .def("__repr__", [](Track* t) {
+            return "opentimelineio.schema.{}(name=\"{}\", children={}, source_range={}, metadata={})"_s.format(
+                py::cast(t).attr("__class__").attr("__name__"),
+                repr(t->name()),
+                repr(t->children()),
+                repr(t->source_range()),
+                repr(t->metadata())
+            );
+        })
+        .def("__str__", [](Track* t) {
+            return "opentimelineio.schema.{}({}, {}, {}, {})"_s.format(
+                py::cast(t).attr("__class__").attr("__name__"),
+                str(t->name()),
+                str(t->children()),
+                str(t->source_range()),
+                str(t->metadata())
+            );
+        });
 
     py::class_<Track::Kind>(track_class, "Kind")
         .def_property_readonly_static("Audio", [](py::object /* self */) { return Track::Kind::audio; })
@@ -613,7 +803,29 @@ Should be subclassed (for example by :class:`.Track` and :class:`.Stack`), not u
              py::arg_v("metadata"_a = py::none()))
         .def("clip_if", [](Stack* t, optional<TimeRange> const& search_range) {
                 return clip_if(t, search_range);
-            }, "search_range"_a = nullopt);
+            }, "search_range"_a = nullopt)
+        .def("__repr__", [](Stack* t) {
+            return "opentimelineio.schema.{}(name=\"{}\", children={}, source_range={}, markers={}, effects={}, metadata={})"_s.format(
+                py::cast(t).attr("__class__").attr("__name__"),
+                t->name(),
+                repr(t->children()),
+                repr(t->source_range()),
+                repr(t->markers()),
+                repr(t->effects()),
+                repr(t->metadata())
+            );
+        })
+        .def("__str__", [](Stack* t) {
+            return "opentimelineio.schema.{}}({}, {}, {}, {}, {}, {})"_s.format(
+                py::cast(t).attr("__class__").attr("__name__"),
+                t->name(),
+                str(t->children()),
+                str(t->source_range()),
+                str(t->markers()),
+                str(t->effects()),
+                str(t->metadata())
+            );
+        });
 
     py::class_<Timeline, SerializableObjectWithMetadata, managing_ptr<Timeline>>(m, "Timeline", py::dynamic_attr())
         .def(py::init([](std::string name,
@@ -646,7 +858,21 @@ Should be subclassed (for example by :class:`.Track` and :class:`.Stack`), not u
             }, "search_range"_a = nullopt)
         .def("children_if", [](Timeline* t, py::object descended_from_type, optional<TimeRange> const& search_range) {
                 return children_if(t, descended_from_type, search_range);
-            }, "descended_from_type"_a = py::none(), "search_range"_a = nullopt);
+            }, "descended_from_type"_a = py::none(), "search_range"_a = nullopt)
+        .def("__repr__", [](Timeline* t) {
+            return "opentimelineio.schema.{}(name=\"{}\", tracks={})"_s.format(
+                py::cast(t).attr("__class__").attr("__name__"),
+                t->name(),
+                repr(t->tracks())
+            );
+        })
+        .def("__str__", [](Timeline* t) {
+            return "opentimelineio.schema.{}({}, {})"_s.format(
+                py::cast(t).attr("__class__").attr("__name__"),
+                t->name(),
+                str(t->tracks())
+            );
+        });
 }
 
 static void define_effects(py::module m) {
@@ -658,7 +884,23 @@ static void define_effects(py::module m) {
              py::arg_v("name"_a = std::string()),
              "effect_name"_a = std::string(),
              py::arg_v("metadata"_a = py::none()))
-        .def_property("effect_name", &Effect::effect_name, &Effect::set_effect_name);
+        .def_property("effect_name", &Effect::effect_name, &Effect::set_effect_name)
+        .def("__repr__", [](Effect* effect) {
+            return "opentimelineio.schema.{}(name=\"{}\", effect_name={}, metadata={})"_s.format(
+                py::cast(effect).attr("__class__").attr("__name__"),
+                effect->name(),
+                effect->effect_name(),
+                py::repr(py::cast(get_metadata_proxy(effect)))
+            );
+        })
+        .def("__str__", [](Effect* effect) {
+            return "opentimelineio.schema.{}({}, {}, {})"_s.format(
+                py::cast(effect).attr("__class__").attr("__name__"),
+                effect->name(),
+                effect->effect_name(),
+                get_metadata_proxy(effect)
+            );
+        });
 
     py::class_<TimeEffect, Effect, managing_ptr<TimeEffect>>(m, "TimeEffect", py::dynamic_attr(), "Base class for all effects that alter the timing of an item.")
         .def(py::init([](std::string name,
@@ -667,7 +909,23 @@ static void define_effects(py::module m) {
                           return new TimeEffect(name, effect_name, py_to_any_dictionary(metadata)); }),
              py::arg_v("name"_a = std::string()),
              "effect_name"_a = std::string(),
-             py::arg_v("metadata"_a = py::none()));
+             py::arg_v("metadata"_a = py::none()))
+        .def("__repr__", [](TimeEffect* effect) {
+            return "opentimelineio.schema.{}(name=\"{}\", effect_name={}, metadata={})"_s.format(
+                py::cast(effect).attr("__class__").attr("__name__"),
+                effect->name(),
+                effect->effect_name(),
+                py::repr(py::cast(get_metadata_proxy(effect)))
+            );
+        })
+        .def("__str__", [](TimeEffect* effect) {
+            return "opentimelineio.schema.{}({}, {}, {})"_s.format(
+                py::cast(effect).attr("__class__").attr("__name__"),
+                effect->name(),
+                effect->effect_name(),
+                get_metadata_proxy(effect)
+            );
+        });
 
     py::class_<LinearTimeWarp, TimeEffect, managing_ptr<LinearTimeWarp>>(m, "LinearTimeWarp", py::dynamic_attr(), R"docstring(
 A time warp that applies a linear speed up or slow down across the entire clip.
@@ -686,13 +944,43 @@ Linear time scalar applied to clip. 2.0 means the clip occupies half the time in
 
 Note that adjusting the time_scalar of a :class:`~LinearTimeWarp` does not affect the duration of the item this effect is attached to.
 Instead it affects the speed of the media displayed within that item.
-)docstring");
+)docstring")
+        .def("__repr__", [](LinearTimeWarp* effect) {
+            return "opentimelineio.schema.{}(name=\"{}\", time_scalar={}, metadata={})"_s.format(
+                py::cast(effect).attr("__class__").attr("__name__"),
+                effect->name(),
+                effect->time_scalar(),
+                py::repr(py::cast(get_metadata_proxy(effect)))
+            );
+        })
+        .def("__str__", [](LinearTimeWarp* effect) {
+            return "opentimelineio.schema.{}({}, {}, {})"_s.format(
+                py::cast(effect).attr("__class__").attr("__name__"),
+                effect->name(),
+                effect->time_scalar(),
+                get_metadata_proxy(effect)
+            );
+        });
 
     py::class_<FreezeFrame, LinearTimeWarp, managing_ptr<FreezeFrame>>(m, "FreezeFrame", py::dynamic_attr(), "Hold the first frame of the clip for the duration of the clip.")
         .def(py::init([](std::string name, py::object metadata) {
                     return new FreezeFrame(name, py_to_any_dictionary(metadata)); }),
             py::arg_v("name"_a = std::string()),
-            py::arg_v("metadata"_a = py::none()));
+            py::arg_v("metadata"_a = py::none()))
+        .def("__repr__", [](LinearTimeWarp* effect) {
+            return "opentimelineio.schema.{}(name=\"{}\", metadata={})"_s.format(
+                py::cast(effect).attr("__class__").attr("__name__"),
+                effect->name(),
+                py::repr(py::cast(get_metadata_proxy(effect)))
+            );
+        })
+        .def("__str__", [](LinearTimeWarp* effect) {
+            return "opentimelineio.schema.{}({} {})"_s.format(
+                py::cast(effect).attr("__class__").attr("__name__"),
+                effect->name(),
+                get_metadata_proxy(effect)
+            );
+        });
 }
 
 static void define_media_references(py::module m) {
@@ -710,7 +998,23 @@ static void define_media_references(py::module m) {
 
         .def_property("available_range", &MediaReference::available_range, &MediaReference::set_available_range)
         .def_property("available_image_bounds", &MediaReference::available_image_bounds, &MediaReference::set_available_image_bounds) 
-        .def_property_readonly("is_missing_reference", &MediaReference::is_missing_reference);
+        .def_property_readonly("is_missing_reference", &MediaReference::is_missing_reference)
+        .def("__repr__", [](MediaReference* mr) {
+            return "asd.{}(name=\"{}\", available_range={}, metadata={})"_s.format(
+                py::cast(mr).attr("__class__").attr("__name__"),
+                mr->name(),
+                mr->available_range(),
+                get_metadata_proxy(mr)
+            );
+        })
+        .def("__str__", [](MediaReference* mr) {
+            return "asd.{}(name=\"{}\", available_range={}, metadata={})"_s.format(
+                py::cast(mr).attr("__class__").attr("__name__"),
+                mr->name(),
+                mr->available_range(),
+                get_metadata_proxy(mr)
+            );
+        });
 
     py::class_<GeneratorReference, MediaReference,
                managing_ptr<GeneratorReference>>(m, "GeneratorReference", py::dynamic_attr())
@@ -755,7 +1059,22 @@ Note that a :class:`~MissingReference` may have useful metadata, even if the loc
              py::arg_v("name"_a = std::string()),
              "available_range"_a = nullopt,
              py::arg_v("metadata"_a = py::none()),
-             "available_image_bounds"_a = nullopt);
+             "available_image_bounds"_a = nullopt)
+        .def("__repr__", [](MissingReference* r) {
+            return "asdasd.{}(name=\"{}\", available_range={}, metadata={})"_s.format(
+                py::cast(r).attr("__class__").attr("__name__"),
+                r->name(),
+                r->available_range(),
+                r->metadata()
+            );
+        })
+        .def("__str__", [](MissingReference* r) {
+            return "asdasd.{}(name=\"{}\", available_range={})"_s.format(
+                py::cast(r).attr("__class__").attr("__name__"),
+                r->name(),
+                r->available_range()
+            );
+        });
 
 
     py::class_<ExternalReference, MediaReference,

@@ -41,11 +41,11 @@ IsDropFrameRate df_enum_converter(py::object& df) {
 }
 
 std::string opentime_python_str(RationalTime rt) {
-    return string_printf("RationalTime(%g, %g)", rt.value(), rt.rate());
+    return string_printf("%s(%g, %g)", py::cast<std::string>(py::cast(rt).attr("__class__").attr("__name__")).c_str(), rt.value(), rt.rate());
 }
 
 std::string opentime_python_repr(RationalTime rt) {
-    return string_printf("otio.opentime.RationalTime(value=%g, rate=%g)", rt.value(), rt.rate());
+    return string_printf("otio.opentime.%s(value=%g, rate=%g)", py::cast<std::string>(py::cast(rt).attr("__class__").attr("__name__")).c_str(), rt.value(), rt.rate());
 }
 
 RationalTime _type_checked(py::object const& rhs, char const* op) {

@@ -32,14 +32,18 @@ void opentime_timeTransform_bindings(py::module m) {
         .def(py::self == py::self)
         .def(py::self != py::self)
         .def("__str__", [](TimeTransform tt) {
-                return string_printf("TimeTransform(%s, %g, %g)",
+                return string_printf("%s(%s, %g, %g)",
+                                     py::cast<std::string>(py::cast(tt).attr("__class__").attr("__name__")).c_str(),
                                      opentime_python_str(tt.offset()).c_str(),
                                      tt.scale(), tt.rate());
 
             })
         .def("__repr__", [](TimeTransform tt) {
-            return string_printf("otio.opentime.TimeTransform(offset=%s, scale=%g, rate=%g)",
-                                 opentime_python_repr(tt.offset()).c_str(), tt.scale(), tt.rate());
+            return string_printf("otio.opentime.%s(offset=%s, scale=%g, rate=%g)",
+                                 py::cast<std::string>(py::cast(tt).attr("__class__").attr("__name__")).c_str(),
+                                 opentime_python_repr(tt.offset()).c_str(),
+                                 tt.scale(),
+                                 tt.rate());
             })
         ;
 }

@@ -213,15 +213,17 @@ For example, if start_time is 1 and end_time is 10, the returned will have a dur
         .def(py::self == py::self)
         .def(py::self != py::self)        
         .def("__str__", [](TimeRange tr) {
-                return string_printf("TimeRange(%s, %s)",
-                                     opentime_python_str(tr.start_time()).c_str(),
-                                     opentime_python_str(tr.duration()).c_str());
+            return string_printf("%s(%s, %s)",
+                py::cast<std::string>(py::cast(tr).attr("__class__").attr("__name__")).c_str(),
+                opentime_python_str(tr.start_time()).c_str(),
+                opentime_python_str(tr.duration()).c_str());
 
-            })
+        })
         .def("__repr__", [](TimeRange tr) {
-            return string_printf("otio.opentime.TimeRange(start_time=%s, duration=%s)",
-                                     opentime_python_repr(tr.start_time()).c_str(),
-                                 opentime_python_repr(tr.duration()).c_str());
+            return string_printf("otio.opentime.%s(start_time=%s, duration=%s)",
+                py::cast<std::string>(py::cast(tr).attr("__class__").attr("__name__")).c_str(),
+                opentime_python_repr(tr.start_time()).c_str(),
+                opentime_python_repr(tr.duration()).c_str());
             })
         ;
 }
