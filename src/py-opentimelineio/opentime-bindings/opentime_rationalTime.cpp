@@ -58,7 +58,7 @@ RationalTime _type_checked(py::object const& rhs, char const* op) {
 
 void opentime_rationalTime_bindings(py::module m) {
     py::class_<RationalTime>(m, "RationalTime", R"docstring(
-The RationalTime class represents a point in time at rt.value*(1/rt.rate) seconds.
+The RationalTime class represents a point in time at ``rt.value*(1/rt.rate)`` seconds.
 It can be rescaled into another :class:`~RationalTime`’s rate.
 )docstring")
         .def(py::init<double, double>(), "value"_a = 0, "rate"_a = 1)
@@ -95,8 +95,8 @@ For example, the duration of a clip from frame 10 to frame 15 is 6 frames. Resul
 Turn a frame number and fps into a time object.
 
 :param frame: Frame number.
-:param fps: Frame-rate for the (:class:`~RationalTime`) instance.
-:returns: Instance for the frame and fps provided.
+:param rate: Frame-rate for the (:class:`~RationalTime`) instance.
+:returns: Instance for the frame and rate provided.
 )docstring")
         .def_static("from_seconds", static_cast<RationalTime (*)(double, double)> (&RationalTime::from_seconds), "seconds"_a, "rate"_a)
         .def_static("from_seconds", static_cast<RationalTime (*)(double)> (&RationalTime::from_seconds), "seconds"_a)
@@ -109,27 +109,38 @@ Turn a frame number and fps into a time object.
                         df_enum_converter(drop_frame),
                         ErrorStatusConverter()
                 );
-        }, "rate"_a, "drop_frame"_a)
+        }, "rate"_a, "drop_frame"_a, R"docstring(
+Convert to timecode (``HH:MM:SS;FRAME``)
+
+:param rate: Frame rate
+:param drop_frame: Drop frame
+)docstring")
         .def("to_timecode", [](RationalTime rt, double rate) {
                 return rt.to_timecode(
                         rate,
                         IsDropFrameRate::InferFromRate,
                         ErrorStatusConverter()
                 );
-        }, "rate"_a)
+        }, "rate"_a, R"docstring(
+Convert to timecode (``HH:MM:SS;FRAME``)
+
+:param rate: Frame rate
+)docstring")
         .def("to_timecode", [](RationalTime rt) {
                 return rt.to_timecode(
                         rt.rate(),
                         IsDropFrameRate::InferFromRate,
                         ErrorStatusConverter());
-                })
+                }, R"docstring(
+Convert to timecode (``HH:MM:SS;FRAME``)
+)docstring")
         .def("to_time_string", &RationalTime::to_time_string)
         .def_static("from_timecode", [](std::string s, double rate) {
                 return RationalTime::from_timecode(s, rate, ErrorStatusConverter());
             }, "timecode"_a, "rate"_a, R"docstring(
 Convert a timecode string into a :class:`~RationalTime`.
 
-:param timecode_str: A colon-delimited timecode.
+:param timecode_str: A colon-delimited timecode (``HH:MM:SS;FRAME``)
 :param rate: The frame-rate to calculate timecode in terms of.
 )docstring")
         .def_static("from_time_string", [](std::string s, double rate) {
