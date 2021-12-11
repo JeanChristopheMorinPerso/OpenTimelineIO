@@ -32,8 +32,7 @@ def each_child(self, search_range=None, descended_from_type=_otio.Composable):
     """ Generator that returns each child contained in the serializable
     collection in the order in which it is found.
 
-    .. deprecated:: 0.14
-
+    .. deprecated:: 0.14.0
         Use :meth:`children_if` instead.
 
     :param opentimelineio.opentime.TimeRange search_range: if specified, only children whose range overlaps with
@@ -50,7 +49,7 @@ def each_clip(self, search_range=None):
     """ Generator that returns each clip contained in the serializable
     collection in the order in which it is found.
 
-    .. deprecated:: 0.14
+    .. deprecated:: 0.14.0
         Use :meth:`each_clip` instead.
 
     :param opentimelineio.opentime.TimeRange search_range: if specified, only children whose range overlaps with

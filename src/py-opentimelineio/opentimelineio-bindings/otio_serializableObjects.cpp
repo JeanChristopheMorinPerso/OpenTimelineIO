@@ -188,7 +188,7 @@ static void define_bases1(py::module m) {
             py::arg_v("metadata"_a = py::none()))
         .def_property_readonly("metadata", [](SOWithMetadata* s) {
                 auto ptr = s->metadata().get_or_create_mutation_stamp();
-            return (AnyDictionaryProxy*)(ptr); }, py::return_value_policy::take_ownership)
+            return (AnyDictionaryProxy*)(ptr); }, py::return_value_policy::take_ownership, "this is metadata")
         .def_property("name", [](SOWithMetadata* so) {
                 return plain_string(so->name());
             }, &SOWithMetadata::set_name);
@@ -199,9 +199,7 @@ static void define_bases2(py::module m) {
     EffectVectorProxy::define_py_class(m, "EffectVector");
 
     py::class_<Composable, SOWithMetadata,
-               managing_ptr<Composable>>(m, "Composable", py::dynamic_attr(), R"docstring(
-An object that can be composed by :class:`~Track` s.
-)docstring")
+               managing_ptr<Composable>>(m, "Composable", py::dynamic_attr(), "An object that can be composed by :class:`~Track`\\s.")
         .def(py::init([](std::string const& name,
                          py::object metadata) {
                           return new Composable(name, py_to_any_dictionary(metadata));
@@ -230,7 +228,7 @@ An object that can be composed by :class:`~Track` s.
              "color"_a = std::string(Marker::Color::red),
              py::arg_v("metadata"_a = py::none()))
         .def_property("color", &Marker::color, &Marker::set_color, "Color string for this marker (for example: ‘RED’), based on the :class:`~Color` enum.")
-        .def_property("marked_range", &Marker::marked_range, &Marker::set_marked_range, "Range this marker applies to, relative to the :class:`Item` this marker is attached to (e.g. the :class:`~Clip` or :class:`~Track` that owns this marker).");
+        .def_property("marked_range", &Marker::marked_range, &Marker::set_marked_range, "Range this marker applies to, relative to the :class:`.Item` this marker is attached to (e.g. the :class:`.Clip` or :class:`.Track` that owns this marker).");
 
     py::class_<Marker::Color>(marker_class, "Color")
         .def_property_readonly_static("PINK", [](py::object /* self */) { return Marker::Color::pink; })
@@ -255,7 +253,7 @@ An object that can be composed by :class:`~Track` s.
                managing_ptr<SerializableCollection>>(m, "SerializableCollection", py::dynamic_attr(), R"docstring(
 A kind of composition which can hold any serializable object.
 
-This composition approximates the concept of a bin - a collection of :class:`SerializableObjects` that do
+This composition approximates the concept of a bin - a collection of :class:`.SerializableObject`\s that do
 not have any compositing meaning, but can serialize to/from OTIO correctly, with metadata and
 a named collection.
 )docstring")
@@ -413,7 +411,7 @@ Other effects are handled by the :class:`Effect` class.
     py::class_<Clip, Item, managing_ptr<Clip>>(m, "Clip", py::dynamic_attr(), R"docstring(
 The base editable object in OTIO.
 
-Contains a :class:`opentimelineio._otio.MediaReference` and a trim on that media reference.
+Contains a :class:`.MediaReference` and a trim on that media reference.
 )docstring")
         .def(py::init([](std::string name, MediaReference* media_reference,
                          optional<TimeRange> source_range, py::object metadata) {
@@ -431,9 +429,9 @@ Contains a :class:`opentimelineio._otio.MediaReference` and a trim on that media
         .def("next", &CompositionIterator::next);
 
     py::class_<Composition, Item, managing_ptr<Composition>>(m, "Composition", py::dynamic_attr(), R"docstring(
-Base class for an :class:`~Item` that contains other :class:`~Item` s.
+Base class for an :class:`~Item` that contains other :class:`~Item`\s.
 
-Should be subclassed (for example by :class:`~Track` and :class:`~Stack`), not used directly.
+Should be subclassed (for example by :class:`.Track` and :class:`.Stack`), not used directly.
 )docstring")
         .def(py::init([](std::string name,
                          py::object children,
@@ -837,11 +835,11 @@ Negative ``start_frame`` is also handled. The above example with a ``start_frame
         .def_property("rate", &ImageSequenceReference::rate, &ImageSequenceReference::set_rate, "Frame rate if every frame in the sequence were played back.")
         .def_property("frame_zero_padding", &ImageSequenceReference::frame_zero_padding, &ImageSequenceReference::set_frame_zero_padding, "Number of digits to pad zeros out to in frame numbers.")
         .def_property("missing_frame_policy", &ImageSequenceReference::missing_frame_policy, &ImageSequenceReference::set_missing_frame_policy, "Directive for how frames in sequence not found on disk should be handled.")
-        .def("end_frame", &ImageSequenceReference::end_frame, "Last frame number in the sequence based on the :attr:`rate` and :attr:`available_range`.")
-        .def("number_of_images_in_sequence", &ImageSequenceReference::number_of_images_in_sequence, "Returns the number of images based on the :attr:`rate` and :attr:`available_range`.")
+        .def("end_frame", &ImageSequenceReference::end_frame, "Last frame number in the sequence based on the :attr:`rate` and :attr:`.available_range`.")
+        .def("number_of_images_in_sequence", &ImageSequenceReference::number_of_images_in_sequence, "Returns the number of images based on the :attr:`rate` and :attr:`.available_range`.")
         .def("frame_for_time", [](ImageSequenceReference *seq_ref, RationalTime time) {
                 return seq_ref->frame_for_time(time, ErrorStatusHandler());
-        }, "time"_a, "Given a :class:`opentimelineio.opentime.RationalTime` within the available range, returns the frame number.")
+        }, "time"_a, "Given a :class:`.RationalTime` within the available range, returns the frame number.")
         .def("target_url_for_image_number", [](ImageSequenceReference *seq_ref, int image_number) {
                 return seq_ref->target_url_for_image_number(
                         image_number,
@@ -861,7 +859,7 @@ This is roughly equivalent to:
                         image_number,
                         ErrorStatusHandler()
                 );
-        }, "image_number"_a, "Given an image number, returns the :class:`opentimelineio.opentime.RationalTime` at which that image should be shown in the space of :attr:`available_range`.");
+        }, "image_number"_a, "Given an image number, returns the :class:`.RationalTime` at which that image should be shown in the space of :attr:`.available_range`.");
 
 }
 

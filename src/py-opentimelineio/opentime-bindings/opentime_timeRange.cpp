@@ -13,8 +13,8 @@ using namespace opentime;
 void opentime_timeRange_bindings(py::module m) {
     py::class_<TimeRange>(m, "TimeRange", R"docstring(
 The TimeRange class represents a range in time. It encodes the start time and the duration,
-meaning that end_time_inclusive (last portion of a sample in the time range) and
-end_time_exclusive can be computed.
+meaning that :meth:`end_time_inclusive` (last portion of a sample in the time range) and
+:meth:`end_time_exclusive` can be computed.
 )docstring")
         // matches the python constructor behavior
         .def(py::init(
@@ -44,10 +44,10 @@ end_time_exclusive can be computed.
         .def("end_time_inclusive", &TimeRange::end_time_inclusive, R"docstring(
 The time of the last sample containing data in the time range.
 
-If the time range starts at (0,24) with duration (10,24), this will be
-(9,24)
+If the time range starts at (0, 24) with duration (10, 24), this will be
+(9, 24)
 
-If the time range starts at (0,24) with duration (10.5, 24):
+If the time range starts at (0, 24) with duration (10.5, 24):
 (10, 24)
 
 In other words, the last frame with data, even if the last frame is fractional.
@@ -198,7 +198,7 @@ The converse would be ``other.finishes(this)``
                 return tr;
             })
         .def_static("range_from_start_end_time", &TimeRange::range_from_start_end_time,
-                    "start_time"_a, "end_time_exclusive"_a, R"docstring(Create a :class:`~TimeRange` from start and end :class:`~RationalTime` s.)docstring")
+                    "start_time"_a, "end_time_exclusive"_a, R"docstring(Create a :class:`~TimeRange` from start and end :class:`~RationalTime`\s.)docstring")
         .def_static("range_from_start_end_time_inclusive", &TimeRange::range_from_start_end_time_inclusive,
                     "start_time"_a, "end_time_inclusive"_a)
         .def(py::self == py::self)

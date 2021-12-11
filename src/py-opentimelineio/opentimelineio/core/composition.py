@@ -43,7 +43,7 @@ def each_child(
     Generator that returns each child contained in the composition in
     the order in which it is found.
 
-    .. deprecated:: 0.14
+    .. deprecated:: 0.14.0
         Use :meth:`children_if` instead.
 
     :param opentimelineio.opentime.TimeRange search_range: if specified, only children whose range overlaps with

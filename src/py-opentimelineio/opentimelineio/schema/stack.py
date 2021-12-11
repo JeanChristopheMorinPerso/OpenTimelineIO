@@ -7,7 +7,7 @@ def each_clip(self, search_range=None):
     """ Generator that returns each clip contained in the stack
     in the order in which it is found.
 
-    .. deprecated:: 0.14
+    .. deprecated:: 0.14.0
         Use :meth:`clip_if` instead.
 
     :param opentimelineio.opentime.TimeRange search_range: if specified, only children whose range overlaps with

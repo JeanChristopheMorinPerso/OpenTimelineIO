@@ -58,7 +58,7 @@ RationalTime _type_checked(py::object const& rhs, char const* op) {
 
 void opentime_rationalTime_bindings(py::module m) {
     py::class_<RationalTime>(m, "RationalTime", R"docstring(
-The RationalTime class represents a point in time at ``rt.value*(1/rt.rate)`` seconds.
+The RationalTime class represents a point in time at :math:`rt.value*(1/rt.rate)` seconds.
 It can be rescaled into another :class:`~RationalTime`’s rate.
 )docstring")
         .def(py::init<double, double>(), "value"_a = 0, "rate"_a = 1)
