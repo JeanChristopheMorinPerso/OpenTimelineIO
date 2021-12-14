@@ -37,6 +37,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.intersphinx',
     # 'sphinx.ext.inheritance_diagram'
+    "sphinxcontrib.toctree_plus",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
