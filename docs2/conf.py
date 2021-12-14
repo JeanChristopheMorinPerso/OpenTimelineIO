@@ -10,22 +10,22 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+import os
 import re
+import sys
 
 import sphinx.application
 
-import os
-import sys
-sys.path.insert(0, os.path.abspath(os.path.join('..', 'build', 'lib.linux-x86_64-3.9')))
+sys.path.insert(0, os.path.abspath(os.path.join("..", "build", "lib.linux-x86_64-3.9")))
 # sys.path.insert(0, os.path.abspath(os.path.join('..', 'src', 'py-opentimelineio')))
 
 import opentimelineio
 
 # -- Project information -----------------------------------------------------
 
-project = 'OpenTimelineIO'
-copyright = '2021, Pixar'
-author = 'Pixar'
+project = "OpenTimelineIO"
+copyright = "2021, Pixar"
+author = "Pixar"
 
 
 # -- General configuration ---------------------------------------------------
@@ -34,19 +34,19 @@ author = 'Pixar'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.intersphinx',
-    # 'sphinx.ext.inheritance_diagram'
+    "sphinx.ext.autodoc",
+    "sphinx.ext.intersphinx",
+    # 'sphinx.ext.inheritance_diagram',
     "sphinxcontrib.toctree_plus",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -54,24 +54,24 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'furo'
+html_theme = "furo"
 
 html_theme_options = {
-    'sidebar_hide_name': True,
-    'light_logo': 'OpenTimelineIO@5xDark.png',
-    'dark_logo': 'OpenTimelineIO@5xLight.png'
+    "sidebar_hide_name": True,
+    "light_logo": "OpenTimelineIO@5xDark.png",
+    "dark_logo": "OpenTimelineIO@5xLight.png",
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ["_static"]
 
 intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}
 
 # Both the class’ and the __init__ method’s docstring are concatenated and inserted.
 # Pybind11 generates class signatures on the __init__ method.
-autoclass_content = 'both'
+autoclass_content = "both"
 
 add_module_names = False
 
@@ -138,7 +138,7 @@ def process_signature(
     obj: object,
     options: dict[str, str],
     signature: str,
-    return_annotation
+    return_annotation,
 ):
     """This does several things:
 
@@ -150,32 +150,34 @@ def process_signature(
       signature. So the idea is to generate a new signature for each one instead.
     """
     signatures = []
-    isClass = what == 'class'
+    isClass = what == "class"
 
     if signature or isClass:
-        docstrLines = obj.__doc__ and obj.__doc__.split('\n') or []
+        docstrLines = obj.__doc__ and obj.__doc__.split("\n") or []
         if not docstrLines or isClass:
             # A class can have part of its doc in its docstr or in the __init__ docstr.
-            docstrLines += obj.__init__.__doc__ and obj.__init__.__doc__.split('\n') or []
+            docstrLines += (
+                obj.__init__.__doc__ and obj.__init__.__doc__.split("\n") or []
+            )
 
         # This could be solidified by using a regex on the reconstructed docstr?
-        if len(docstrLines) > 1 and 'Overloaded function.' in docstrLines:
+        if len(docstrLines) > 1 and "Overloaded function." in docstrLines:
             # Overloaded function detected. Extract each signature and create a new
             # signature for each of them.
             for line in docstrLines:
-                nameToMatch = name.split('.')[-1] if not isClass else '__init__'
+                nameToMatch = name.split(".")[-1] if not isClass else "__init__"
 
                 # Maybe get use sphinx.util.inspect.signature_from_str ?
-                if match := re.search(f'^\d+\.\s{nameToMatch}(\(.*)', line):
+                if match := re.search(f"^\d+\.\s{nameToMatch}(\(.*)", line):
                     signatures.append(match.group(1))
         elif signature:
             signatures.append(signature)
 
-    signature = ''
+    signature = ""
 
     # Remove self from signatures.
     for index, sig in enumerate(signatures):
-        newsig = re.sub('self\: [a-zA-Z0-9._]+(,\s)?', '', sig)
+        newsig = re.sub("self\: [a-zA-Z0-9._]+(,\s)?", "", sig)
         # newsig = re.sub('opentimelineio\._otio\.', '', newsig)
         # newsig = re.sub('opentimelineio\._opentime\.', 'opentimelineio.opentime.', newsig)
         # newsig = re.sub('List\[', 'list[', newsig)
@@ -192,15 +194,15 @@ def process_signature(
         signatures[index] = newsig
 
     # if return_annotation:
-        # return_annotation = re.sub('opentimelineio\._otio\.', '', return_annotation)
-        # return_annotation = re.sub('opentimelineio\._opentime\.', 'opentimelineio.opentime.', return_annotation)
-        # return_annotation = re.sub('List\[', 'list[', return_annotation)
+    # return_annotation = re.sub('opentimelineio\._otio\.', '', return_annotation)
+    # return_annotation = re.sub('opentimelineio\._opentime\.', 'opentimelineio.opentime.', return_annotation)
+    # return_annotation = re.sub('List\[', 'list[', return_annotation)
 
     # if name.endswith('NeighborGapPolicy.name'):
     #     signatures = ['()']
     #     return_annotation = 'str'
 
-    signature = '\n'.join(signatures)
+    signature = "\n".join(signatures)
     return signature, return_annotation
 
 
@@ -220,7 +222,7 @@ def process_docstring(
     name: str,
     obj: object,
     options: dict[str, str],
-    lines: list[str]
+    lines: list[str],
 ):
     # if what == 'class' and f'.. inheritance-diagram:: {name}' not in lines:
     #     lines.append(f'.. inheritance-diagram:: {name}')
@@ -229,8 +231,8 @@ def process_docstring(
 
     for index, line in enumerate(lines):
         if re.match(f'\d+\. {name.split("."[0])}', line):
-            line = re.sub('self\: [a-zA-Z0-9._]+(,\s)?', '', line)
-            line = re.sub('opentimelineio\._((opentime)|(otio))\.', '', line)
+            line = re.sub("self\: [a-zA-Z0-9._]+(,\s)?", "", line)
+            line = re.sub("opentimelineio\._((opentime)|(otio))\.", "", line)
             lines[index] = line
 
 
@@ -242,6 +244,6 @@ def setup(app: sphinx.application.Sphinx):
     was added to get api documentation building on the ReadTheDocs server.
     """
     # app.connect('autodoc-process-docstring', processDocstring)
-    app.connect('autodoc-process-signature', process_signature)
+    app.connect("autodoc-process-signature", process_signature)
     # app.connect('autodoc-process-bases', process_bases)
     app.connect("autodoc-process-docstring", process_docstring)
