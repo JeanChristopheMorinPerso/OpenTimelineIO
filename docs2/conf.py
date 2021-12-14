@@ -13,6 +13,8 @@
 import os
 import re
 import sys
+import inspect
+import collections.abc
 
 import sphinx.application
 
@@ -236,6 +238,26 @@ def process_docstring(
             lines[index] = line
 
 
+def process_bases(
+    app: sphinx.application.Sphinx,
+    name: str,
+    obj: object,
+    options: dict[str, str],
+    bases: list[type],
+):
+    """
+    Some classes are Pybind11 binded and are manually registered against
+    collection.abc classes.
+    """
+    klasses = []
+    for klass in vars(collections.abc).values():
+        if inspect.isclass(klass) and issubclass(obj, klass):
+            klasses.append(klass)
+
+    if len(klasses) > 1 and klasses[-1].__module__ == "collections.abc":
+        bases.append(klasses[-1])
+
+
 def setup(app: sphinx.application.Sphinx):
     """This method is a hook into the Sphinx builder system and injects the
     apidoc module into it so it runs autodoc before running build.
@@ -247,3 +269,4 @@ def setup(app: sphinx.application.Sphinx):
     app.connect("autodoc-process-signature", process_signature)
     # app.connect('autodoc-process-bases', process_bases)
     app.connect("autodoc-process-docstring", process_docstring)
+    app.connect("autodoc-process-bases", process_bases)
