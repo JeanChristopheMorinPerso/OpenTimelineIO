@@ -62,9 +62,7 @@ If start frame is 10 and duration is 5.5, then end_time_exclusive is
 15.5, because the last time with data in this range is 15.
 )docstring")
         .def("duration_extended_by", &TimeRange::duration_extended_by, "other"_a)
-        .def("extended_by", &TimeRange::extended_by, "other"_a, R"docstring(
-Construct a new :class:`~TimeRange` that is this one extended by other.
-)docstring")
+        .def("extended_by", &TimeRange::extended_by, "other"_a, "Construct a new :class:`~TimeRange` that is this one extended by other.")
         .def("clamped", (RationalTime (TimeRange::*)(RationalTime) const) &TimeRange::clamped, "other"_a, R"docstring(
 Clamp 'other' (:class:`~RationalTime`) according to
 :attr:`start_time`/:attr:`end_time_exclusive` and bound arguments.

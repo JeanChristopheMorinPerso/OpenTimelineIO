@@ -227,7 +227,7 @@ static void define_bases2(py::module m) {
              "marked_range"_a = TimeRange(),
              "color"_a = std::string(Marker::Color::red),
              py::arg_v("metadata"_a = py::none()))
-        .def_property("color", &Marker::color, &Marker::set_color, "Color string for this marker (for example: ‘RED’), based on the :class:`~Color` enum.")
+        .def_property("color", &Marker::color, &Marker::set_color, "Color string for this marker (for example: 'RED'), based on the :class:`~Color` enum.")
         .def_property("marked_range", &Marker::marked_range, &Marker::set_marked_range, "Range this marker applies to, relative to the :class:`.Item` this marker is attached to (e.g. the :class:`.Clip` or :class:`.Track` that owns this marker).");
 
     py::class_<Marker::Color>(marker_class, "Color")
@@ -372,11 +372,11 @@ static void define_items_and_compositions(py::module m) {
             return t->trimmed_range_in_parent(ErrorStatusHandler());
             }, "Find and return the timmed range of this item in the parent.");
 
-
     py::class_<Transition::Type>(transition_class, "Type", R"docstring(
 Enum encoding types of transitions.
 
-This is for representing “Dissolves” and “Wipes” defined by the multi-source effect as defined by SMPTE 258M-2004 7.6.3.2
+
+This is for representing “Dissolves” and “Wipes” defined by the multi-source effect as defined by `SMPTE 258M-2004 <https://ieeexplore.ieee.org/servlet/opac?punumber=7291837>`_ 7.6.3.2
 
 Other effects are handled by the :class:`Effect` class.
 )docstring")
