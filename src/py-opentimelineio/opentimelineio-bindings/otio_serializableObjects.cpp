@@ -149,7 +149,7 @@ private:
 };
 
 static void define_bases1(py::module m) {
-    py::class_<SerializableObject, managing_ptr<SerializableObject>>(m, "SerializableObject", py::dynamic_attr())
+    py::class_<SerializableObject, managing_ptr<SerializableObject>>(m, "SerializableObject", py::dynamic_attr(), "Superclass for all classes whose instances can be serialized.")
         .def(py::init<>())
         .def_property_readonly("_dynamic_fields", [](SerializableObject* s) {
                 auto ptr = s->dynamic_fields().get_or_create_mutation_stamp();
