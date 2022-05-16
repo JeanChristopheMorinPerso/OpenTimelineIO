@@ -5,7 +5,7 @@
 ## Summary
 
 The creative process of editing often involves adding, removing or replacing shots in a sequence. Other groups of people
-working on the same project want to know about changes to the list of shots in use on a day to day basis. For example,
+working on the same project want to know about changes to the list of shots in use on a day-to-day basis. For example,
 animators working on a shot should be informed if the shot they are working on has been cut from the sequence, so they
 can stop working on it. Similarly, if new shots are added, animation should start working on those shots. Since the
 creative decision about which shots are in or out of the cut comes from editorial, we can use OTIO to communicate these
@@ -17,7 +17,7 @@ rendered animation clips, dialogue recordings, sound effects and music. The lead
 for the short film over the course of a few weeks. At the same time, the animation department is actively working on
 the animated shots for the film. As revisions are made to the animated shots, rendered clips are delivered to editorial
 with a well established naming convention. On a daily basis, an EDL or AAF is exported from Media Composer and passed
-to the animation department so they can stay up to date with the current cut.
+to the animation department, so they can stay up to date with the current cut.
 
 In each revision of the cut, Animation wants to know which shots have been added or removed. They run a Python script
 which uses OpenTimelineIO to read an EDL or AAF from editorial and produces a list of video clip names found in the cut.

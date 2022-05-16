@@ -89,7 +89,7 @@ env CMAKE_ARGS="-DCMAKE_VAR=VALUE1 -DCMAKE_VAR_2=VALUE2" python -m pip install .
 
 `python -m pip install .` adds some overhead that might be annoying or unwanted when
 developing the python bindings. For that reason (and only that reason), if you want a faster
-iteration process, you can use `setuptools` commands. For example you can use
+iteration process, you can use `setuptools` commands. For example, you can use
 `python setup.py build_ext` to only run the compilation step. Be aware that calling `setup.py`
 directly is highly discouraged and should only be used when no of the other options
 are viable. See https://blog.ganssle.io/articles/2021/10/setup-py-deprecated.html.

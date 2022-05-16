@@ -39,7 +39,7 @@ duration_from_start_end_time_inclusive = (
 
 
 def to_timecode(rt, rate=None, drop_frame=None):
-    """Convert a :class:`~RationalTime` into a timecode string."""
+    """Convert a :class:`RationalTime` into a timecode string."""
     return (
         rt.to_timecode()
         if rate is None and drop_frame is None
@@ -48,17 +48,17 @@ def to_timecode(rt, rate=None, drop_frame=None):
 
 
 def to_frames(rt, rate=None):
-    """Turn a :class:`~RationalTime` into a frame number."""
+    """Turn a :class:`RationalTime` into a frame number."""
     return rt.to_frames() if rate is None else rt.to_frames(rate)
 
 
 def to_seconds(rt):
-    """Convert a :class:`~RationalTime` into float seconds"""
+    """Convert a :class:`RationalTime` into float seconds"""
     return rt.to_seconds()
 
 
 def to_time_string(rt):
-    """Convert this timecode to time with microsecond, as formated in
+    """Convert this timecode to time with microsecond, as formatted in
     `FFMPEG <https://trac.ffmpeg.org/wiki/Seeking#Timeunitsyntax>`_
     """
     return rt.to_time_string()

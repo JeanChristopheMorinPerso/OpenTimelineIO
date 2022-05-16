@@ -150,4 +150,4 @@ class PythonPlugin(core.SerializableObject):
             raise exceptions.AdapterDoesntSupportFunctionError(
                 "Sorry, {} doesn't support {}.".format(self.name, func_name)
             )
-        return (getattr(self.module(), func_name)(**kwargs))
+        return getattr(self.module(), func_name)(**kwargs)

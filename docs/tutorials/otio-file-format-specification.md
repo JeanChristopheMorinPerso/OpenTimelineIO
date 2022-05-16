@@ -18,7 +18,7 @@ OpenTimelineIO files are serialized as JSON (http://www.json.org).
 Supported number types:
 
 - integers: `int64_t` (signed 64 bit integer)
-- floating point numbers: `double` (IEEE754 64 bit signed floating point number)
+- floating point numbers: `double` (IEEE754 64-bit signed floating point number)
 
 In addition to the basic JSON spec, OTIO allows the following values for doubles:
 
@@ -30,7 +30,7 @@ In addition to the basic JSON spec, OTIO allows the following values for doubles
 An OTIO file is a tree structure of nested OTIO objects. Each OTIO object is stored as a JSON dictionary with member fields,
 each of which may contain simple data types or nested OTIO objects.
 
-OTIO does not support instancing, there cannot be references the same object multiple times in the tree structure. If the same clip or media appears multiple times in a timeline, it will appear as identical copies of the Clip or MediaReference object.
+OTIO does not support instancing, there cannot be references of the same object multiple times in the tree structure. If the same clip or media appears multiple times in a timeline, it will appear as identical copies of the Clip or MediaReference object.
 
 The top level object in an OTIO file can be any OTIO data type, but is typically a Timeline. This means that most use cases will assume that the top level
 object is a Timeline, but in specific workflows, otio files can be read or written that contain
@@ -48,11 +48,11 @@ or dictionary. If the value is a dictionary, then it will often be an OTIO data 
 OTIO JSON files are typically formatted with indentation to make them easier to read. This makes the files slightly larger, but dramatically improves human
 readability which makes debugging much easier. Furthermore, the OTIO library will write the keys of each object in a predictable order to help with change tracking, comparisons, etc.
 
-Since human readablility and ease of use are explicit goals of the OpenTimelineIO project, it is recommended that OTIO JSON not be minified unless absolutely necessary. If a minimum file size is desired, the recommendation is to use gzip rather than minifying.
+Since human readability and ease of use are explicit goals of the OpenTimelineIO project, it is recommended that OTIO JSON not be minified unless absolutely necessary. If a minimum file size is desired, the recommendation is to use gzip rather than minifying.
 
 ## Nesting
 
-A Timeline has one child, called "tracks" which is a Stack. Each of that Stack's children is a Track. From there on down each child can be any of these types: Clip, Filler, Stack, Track.
+A [Timeline] has one child, called "tracks" which is a [Stack]. Each of that [Stack]'s children is a [Track]. From there on down each child can be any of these types: [Clip], Filler, [Stack], [Track].
 
 In a simple case with one track of 3 clips:
 
@@ -69,7 +69,7 @@ In order to make the tree structure easy to traverse, OTIO uses the name "childr
 
 ## Metadata
 
-Timeline, Stack, Track, Clip, MediaReferece, and most other OTIO objects all have a `metadata` property.
+[Timeline], [Stack], [Track], [Clip], [MediaReferece], and most other OTIO objects all have a `metadata` property.
 This metadata property holds a dictionary of key/value pairs which may be deeply nested, and may hold any
 variety of JSON-compatible data types (numbers, booleans, strings, arrays, dictionaries) as well as any other
 OTIO objects.
@@ -80,7 +80,7 @@ applications, or other workflows can use that metadata however needed. For examp
 several of the adapters shipped with OTIO use metadata to store information that doesn't (yet) fit into
 the core OTIO schema.
 
-Due to the fact that many different workflows can and will use metadata, it is important to group
+Due to the fact that many workflows can and will use metadata, it is important to group
 metadata inside namespaces so that independent workflows can coexist without encountering name collisions. In the example below, there is metadata on the Timeline and on several Clips for both a hypothetical `my_playback_tool` and `my_production_tracking_system` that could coexist with anything else added under a different namespace.
 
 Metadata can also be useful when prototyping new OTIO schemas. An existing object can be extended with metadata which can later be migrated into a new schema version, or a custom schema defined in a [SchemaDef plugin](write-a-schemadef).
@@ -132,7 +132,7 @@ Metadata can also be useful when prototyping new OTIO schemas. An existing objec
                         "media_reference": null,
                         "metadata": {
                             "my_playback_tool": {
-                                "tags": ["for_review", "nightly_render"],
+                                "tags": ["for_review", "nightly_render"]
                             },
                             "my_production_tracking_system": {
                                 "status": "IP",
@@ -180,7 +180,7 @@ Metadata can also be useful when prototyping new OTIO schemas. An existing objec
                         "media_reference": null,
                         "metadata": {
                             "my_playback_tool": {
-                                "tags": ["for_review", "nightly_render"],
+                                "tags": ["for_review", "nightly_render"]
                             },
                             "my_production_tracking_system": {
                                 "status": "IP",
@@ -192,8 +192,8 @@ Metadata can also be useful when prototyping new OTIO schemas. An existing objec
                         "source_range": {
                             "OTIO_SCHEMA": "TimeRange.1",
                             "duration": {
-                                "OTIO_SCHEMA": "RationalTime.1",
-                                "rate": 24,
+                              
+                                                              "rate": 24,
                                 "value": 50
                             },
                             "start_time": {
@@ -211,7 +211,7 @@ Metadata can also be useful when prototyping new OTIO schemas. An existing objec
                         "media_reference": null,
                         "metadata": {
                             "my_playback_tool": {
-                                "tags": [],
+                                "tags": []
                             },
                             "my_production_tracking_system": {
                                 "status": "final",
@@ -240,8 +240,8 @@ Metadata can also be useful when prototyping new OTIO schemas. An existing objec
                         "metadata": {},
                         "name": "t3",
                         "transition_type": "SMPTE_Dissolve",
-                        "parameters": {},
-                        "in_offset": {
+                      
+                                              "in_offset": {
                             "OTIO_SCHEMA" : "RationalTime.1",
                             "rate" : 24,
                             "value" : 10
@@ -274,3 +274,8 @@ Metadata can also be useful when prototyping new OTIO schemas. An existing objec
 ## Schema Specification
 
 To see an autogenerated documentation of the serialized types and their fields, see this: [Autogenerated Serialized File Format](otio-serialized-schema).
+
+[Clip]: ../api/python/opentimelineio.schema.html#opentimelineio.schema.Clip
+[Stack]: ../api/python/opentimelineio.schema.html#opentimelineio.schema.Stack
+[Timeline]: ../api/python/opentimelineio.schema.html#opentimelineio.schema.Timeline
+[Track]: ../api/python/opentimelineio.schema.html#opentimelineio.schema.Track

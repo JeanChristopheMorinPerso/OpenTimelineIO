@@ -51,7 +51,7 @@ class _Context(Mapping):
     """
     An inherited value context.
 
-    In FCP XML there is a concept of inheritance down the element heirarchy.
+    In FCP XML there is a concept of inheritance down the element hierarchy.
     For instance, a ``clip`` element may not specify the ``rate`` locally, but
     instead inherit it from the parent ``track`` element.
 
@@ -64,15 +64,13 @@ class _Context(Mapping):
         ``my_current_context["./rate"]``
 
     This object can be thought of as immutable. You get a new context when you
-    push an element. This prevents inadvertant tampering with parent contexts
+    push an element. This prevents inadvertent tampering with parent contexts
     that may be used at levels above.
 
-    This DOES NOT support ``id`` attribute dereferencing, please make sure to
+    This DOES NOT support ``id`` attribute de-referencing, please make sure to
     do that prior to using this structure.
 
-    .. seealso:: https://developer.apple.com/library/archive/documentation\
-            /AppleApplications/Reference/FinalCutPro_XML/Basics/Basics.html#\
-            //apple_ref/doc/uid/TP30001154-TPXREF102
+    .. seealso:: `FinalCutPro_XML <https://developer.apple.com/documentation/professional_video_applications/fcpxml_reference>`
     """
 
     def __init__(self, element=None, parent_elements=None):
@@ -114,9 +112,11 @@ class _Context(Mapping):
         Pushes an element to the top of the stack.
 
         :param element: Element to push to the stack.
+
         :return: The new context with the provided element pushed to the top
             of the stack.
-        :raises: :class: `ValueError` if the element is already in the stack.
+
+        :raises: :class:`ValueError` if the element is already in the stack.
         """
         for context_element in self.elements:
             if context_element == element:
@@ -134,18 +134,18 @@ def _url_to_path(url):
 
 def _bool_value(element):
     """
-    Given an xml element, returns the tag text converted to a bool.
+    Given an XML element, returns the tag text converted to a bool.
 
     :param element: The element to fetch the value from.
 
     :return: A boolean.
     """
-    return (element.text.lower() == "true")
+    return element.text.lower() == "true"
 
 
 def _element_identification_string(element):
     """
-    Gets a string that will hopefully help in identifing an element when there
+    Gets a string that will hopefully help in identifying an element when there
     is an error.
     """
     info_string = "tag: {}".format(element.tag)
@@ -182,14 +182,14 @@ def _otio_rate(timebase, ntsc):
     if not ntsc:
         return timebase
 
-    return (timebase * 1000.0 / 1001)
+    return timebase * 1000.0 / 1001
 
 
 def _rate_from_context(context):
     """
     Given the context object, gets the appropriate rate.
 
-    :param context: The :class: `_Context` instance to find the rate in.
+    :param context: The :class:`_Context` instance to find the rate in.
 
     :return: The rate value or ``None`` if no rate is available in the context.
     """
@@ -207,15 +207,14 @@ def _rate_from_context(context):
 
 def _time_from_timecode_element(tc_element, context=None):
     """
-    Given a timecode xml element, returns the time that represents.
+    Given a timecode XML element, returns the time that represents.
 
     .. todo:: Non Drop-Frame timecode is not yet supported by OTIO.
 
     :param tc_element: The ``timecode`` element.
     :param context: The context dict under which this timecode is being gotten.
 
-    :return: The :class: `opentime.RationalTime` representation of the
-        timecode.
+    :return: The :class:`opentime.RationalTime` representation of the timecode.
     """
     if context is not None:
         local_context = context.context_pushing_element(tc_element)
@@ -246,12 +245,12 @@ def _time_from_timecode_element(tc_element, context=None):
 def _track_kind_from_element(media_element):
     """
     Given an FCP XML media sub-element, returns an appropriate
-    :class: `schema.TrackKind` value corresponding to that media type.
+    :class:`schema.TrackKind` value corresponding to that media type.
 
     :param media_element: An XML element that is a child of the ``media`` tag.
 
     :return: The corresponding :class`schema.TrackKind` value.
-    :raises: :class: `ValueError` When the media type is unsupported.
+    :raises: :class:`ValueError` When the media type is unsupported.
     """
     element_tag = media_element.tag.lower()
     if element_tag == "audio":
@@ -276,7 +275,7 @@ def _is_primary_audio_channel(track):
     exploded_index = track.attrib.get('currentExplodedTrackIndex', '0')
     exploded_count = track.attrib.get('totalExplodedTrackCount', '1')
 
-    return (exploded_index == '0' or exploded_count == '1')
+    return exploded_index == '0' or exploded_count == '1'
 
 
 def _transition_cut_point(transition_item, context):
@@ -287,7 +286,7 @@ def _transition_cut_point(transition_item, context):
     :param transition_item: The XML element for the transition.
     :param context: The context dictionary applying to this transition.
 
-    :return: The :class: `opentime.RationalTime` the transition cuts at.
+    :return: The :class:`opentime.RationalTime` the transition cuts at.
     """
     alignment = transition_item.find('./alignment').text
     start = int(transition_item.find('./start').text)
@@ -322,8 +321,7 @@ def _xml_tree_to_dict(node, ignore_tags=None, omit_timing=True):
     .. warning:: This scheme does not allow for leaf elements to have
     attributes.  for the moment this doesn't seem to be an issue.
 
-    :param node: The root xml element to express childeren of in the
-        dictionary.
+    :param node: The root XML element to express childeren of in the dictionary.
     :param ignore_tags: A collection of tagnames to skip when converting.
     :param omit_timing: If ``True``, omits timing-specific tags.
 
@@ -385,11 +383,11 @@ def _dict_to_xml_tree(data_dict, tag):
     Given a dictionary, returns an element tree storing the data. This is the
     inverse of :func:`_xml_tree_to_dict`.
 
-    Any key/value pairs in the dictionary heirarchy where the key is prefixed
+    Any key/value pairs in the dictionary hierarchy where the key is prefixed
     with ``@`` will be treated as attributes on the containing element.
 
     .. note:: This will automatically omit some kinds of metadata it should
-    be up to the xml building functions to manage (such as timecode and id).
+    be up to the XML building functions to manage (such as timecode and id).
 
     :param data_dict: The dictionary to turn into an XML tree.
     :param tag: The tag name to use for the top-level element.
@@ -491,7 +489,7 @@ def _get_or_create_subelement(parent_element, tag):
 def _make_pretty_string(tree_e):
     # most of the parsing in this adapter is done with cElementTree because it
     # is simpler and faster. However, the string representation it returns is
-    # far from elegant. Therefor we feed it through minidom to provide an xml
+    # far from elegant. Therefor we feed it through minidom to provide a xml
     # with indentations.
     string = cElementTree.tostring(tree_e, encoding="UTF-8", method="xml")
     dom = minidom.parseString(string)
@@ -500,12 +498,12 @@ def _make_pretty_string(tree_e):
 
 def marker_for_element(marker_element, rate):
     """
-    Creates an :class: `schema.Marker` for the provided element.
+    Creates an :class:`opentimelineio.schema.Marker` for the provided element.
 
     :param marker_element: The XML element for the marker.
     :param rate: The rate for the object the marker is attached to.
 
-    :return: The :class: `schema.Marker` instance.
+    :return: The :class:`opentimelineio.schema.Marker` instance.
     """
     # TODO: The spec doc indicates that in and out are required, but doesn't
     #       say they have to be locally specified, so is it possible they
@@ -541,7 +539,7 @@ def markers_from_element(element, context=None):
     :param element: An element with one or more ``marker`` child elements.
     :param context: The context for this element.
 
-    :return: A :class: `list` of :class: `schema.Marker` instances attached
+    :return: A :class:`list` of :class:`schema.Marker` instances attached
         to the provided element.
     """
     if context is not None:
@@ -582,7 +580,7 @@ class FCP7XMLParser:
 
     def __init__(self, element_tree):
         """
-        Constructor, must be init with an xml etree.
+        Constructor, must be init with an XML etree.
         """
         self._etree = element_tree
 
@@ -590,9 +588,11 @@ class FCP7XMLParser:
 
     def _derefed_element(self, element):
         """
-        Given an element, dereferences it by it's id attribute if needed. If
-        the element has an id attribute and it's our first time encountering
+        Given an element, dereferences it by its id attribute if needed. If
+        the element has an id attribute, and it's our first time encountering
         it, store the id.
+
+        :param element: The XML etree element.
         """
         if element is None:
             return element
@@ -606,7 +606,7 @@ class FCP7XMLParser:
 
     def _derefed_iterfind(self, element, path):
         """
-        Given an elemnt, finds elements with the provided path below and
+        Given an element, finds elements with the provided path below and
         returns an iterator of the dereferenced versions of those.
 
         :param element: The XML etree element.
@@ -619,7 +619,7 @@ class FCP7XMLParser:
         )
 
     def top_level_sequences(self):
-        """"
+        """
         Returns a list of timelines for the top-level sequences in the file.
         """
         context = _Context()
@@ -700,11 +700,11 @@ class FCP7XMLParser:
         """
         Given an element, parses out track information as a stack.
 
-        :param element: The element under which to find the tracks (typically
-            a ``media`` element.
+        :param element: The element under which to find the tracks
+            (typically a ``media`` element).
         :param context: The current parser context.
 
-        :return: A :class: `schema.Stack` of the tracks.
+        :return: A :class:`schema.Stack` of the tracks.
         """
         # Determine the context
         local_context = context.context_pushing_element(element)
@@ -747,7 +747,7 @@ class FCP7XMLParser:
         Given a track element, constructs the OTIO track.
 
         :param track_element: The track XML element.
-        :param track_kind: The :class: `schema.TrackKind` for the track.
+        :param track_kind: The :class:`schema.TrackKind` for the track.
         :param context: The context dict for this track.
         """
         local_context = context.context_pushing_element(track_element)
@@ -817,10 +817,10 @@ class FCP7XMLParser:
         Given a file XML element, returns the
         :class`schema.ExternalReference`.
 
-        :param file_element: The file xml element.
+        :param file_element: The file XML element.
         :param context: The parent context dictionary.
 
-        :return: An :class: `schema.ExternalReference`.
+        :return: An :class:`schema.ExternalReference`.
         """
         local_context = context.context_pushing_element(file_element)
         media_ref_rate = _rate_from_context(local_context)
@@ -839,7 +839,7 @@ class FCP7XMLParser:
         else:
             path = None
 
-        # Determine the mediasource
+        # Determine the media source
         mediasource_element = file_element.find("./mediaSource")
         if mediasource_element is not None:
             mediasource = mediasource_element.text
@@ -899,7 +899,7 @@ class FCP7XMLParser:
 
         :param effect_element: The effect for the generator.
 
-        :return: An :class: `schema.GeneratorReference` instance.
+        :return: An :class:`schema.GeneratorReference` instance.
         """
         name = _name_from_element(effect_element)
         md_dict = _xml_tree_to_dict(effect_element, {"name", "effectid"})
@@ -919,19 +919,19 @@ class FCP7XMLParser:
         self, item_element, head_transition, tail_transition, context
     ):
         """ Given a track item, returns a tuple with the appropriate OpenTimelineIO
-        schema item as the first element and an :class: `opentime.TimeRange` of
+        schema item as the first element and an :class:`opentime.TimeRange` of
         the resolved timeline range the clip
         occupies.
 
         :param item_element: The track item XML node.
-        :param head_transition: The xml element for the transition immediately
+        :param head_transition: The XML element for the transition immediately
             before or ``None``.
-        :param tail_transition: The xml element for the transition immediately
+        :param tail_transition: The XML element for the transition immediately
             after or ``None``.
         :param context: The context dictionary.
 
-        :return: An :class: `core.Item` subclass instance and
-            :class: `opentime.TimeRange` for the item.
+        :return: An :class:`core.Item` subclass instance and
+            :class:`opentime.TimeRange` for the item.
         """
         parent_rate = _rate_from_context(context)
 
@@ -1002,15 +1002,15 @@ class FCP7XMLParser:
         self, clipitem_element, item_range, start_offset, context
     ):
         """
-        Given a clipitem xml element, returns an :class: `schema.Clip`.
+        Given a clip item XML element, returns an :class:`schema.Clip`.
 
         :param clipitem_element: The element to create a clip for.
         :param item_range: The time range in the timeline the clip occupies.
-        :param start_offset: The amount by which the ``in`` time of the clip
+        :param start_offset: The amount by which the in time of the clip
             source should be advanced (usually due to a transition).
         :param context: The parent context for the clip.
 
-        :return: The :class: `schema.Clip` instance.
+        :return: The :class:`schema.Clip` instance.
         """
         local_context = context.context_pushing_element(clipitem_element)
 
@@ -1091,7 +1091,7 @@ class FCP7XMLParser:
 
     def effect_from_filter_element(self, filter_element):
         """
-        Given a filter element, creates an :class: `schema.Effect`.
+        Given a filter element, creates an :class:`schema.Effect`.
 
         :param filter_element: The ``filter`` element containing the effect.
 
@@ -1120,7 +1120,7 @@ class FCP7XMLParser:
         :param item_element: The element to create a transition for.
         :param context: The parent context for the element.
 
-        :return: The :class: `schema.Transition` instance.
+        :return: The :class:`schema.Transition` instance.
         """
         # start and end times are in the parent's rate
         rate = _rate_from_context(context)
@@ -1159,13 +1159,13 @@ def _backreference_for_item(item, tag, br_map):
     intended to be an opaque data structure and only accessed through this
     function, the structure of data in br_map may change.
 
-    :param item: The :class: `core.SerializableObject` to create an id for.
+    :param item: The :class:`core.SerializableObject` to create an id for.
     :param tag: The tag name that will be used for object in xml.
     :param br_map: The dictionary containing backreference information
         generated so far.
 
     :return: A 2-tuple of (id_string, is_new_id) where the ``id_string`` is
-        the value for the xml id attribute and ``is_new_id`` is ``True`` when
+        the value for the XML id attribute and ``is_new_id`` is ``True`` when
         this is the first time that id was encountered.
     """
     # br_map is structured as a dictionary with tags as keys, and dictionaries
@@ -1244,7 +1244,7 @@ def _backreference_build(tag):
         - Have br_map (backreference map, a dictionary) as the last positional
         arg. br_map stores the state for encountered items.
 
-    :param tag: The xml tag of the element the wrapped function generates.
+    :param tag: The XML tag of the element the wrapped function generates.
     """
     # We can also encode these back-references if an item is accessed multiple
     # times. To do this we store an id attribute on the element. For back-
@@ -1283,7 +1283,7 @@ def _append_new_sub_element(parent, tag, attrib=None, text=None):
     """
     Creates a sub-element with the provided tag, attributes, and text.
 
-    This is a convenience because the :class: `SubElement` constructor does not
+    This is a convenience because the :class:`SubElement` constructor does not
     provide the ability to set ``text``.
 
     :param parent: The parent element.
@@ -1302,10 +1302,10 @@ def _append_new_sub_element(parent, tag, attrib=None, text=None):
 
 def _build_rate(fps):
     """
-    Given a framerate, makes a ``rate`` xml tree.
+    Given a framerate, makes a ``rate`` XML tree.
 
     :param fps: The framerate.
-    :return: The fcp xml ``rate`` tree.
+    :return: The fcp XML ``rate`` tree.
     """
     rate = math.ceil(fps)
 
@@ -1321,13 +1321,13 @@ def _build_rate(fps):
 
 def _build_timecode(time, fps, drop_frame=False, additional_metadata=None):
     """
-    Makes a timecode xml element tree.
+    Makes a timecode XML element tree.
 
     .. warning:: The drop_frame parameter is currently ignored and
         auto-determined by rate. This is because the underlying otio timecode
         conversion assumes DFTC based on rate.
 
-    :param time: The :class: `opentime.RationalTime` for the timecode.
+    :param time: The :class:`opentime.RationalTime` for the timecode.
     :param fps: The framerate for the timecode.
     :param drop_frame: If True, generates drop-frame timecode.
     :param additional_metadata: A dictionary with other metadata items like
@@ -1381,7 +1381,7 @@ def _build_item_timings(
     timecode
 ):
     # source_start is absolute time taking into account the timecode of the
-    # media. But xml regards the source in point from the start of the media.
+    # media. But XML regards the source in point from the start of the media.
     # So we subtract the media timecode.
     item_rate = item.source_range.start_time.rate
     source_start = (item.source_range.start_time - timecode)
@@ -1628,7 +1628,7 @@ def _build_clip_item(clip_item, timeline_range, transition_offsets, br_map):
     # as placeholders for effects that may not have a true analog in FCP 7.
     # Since OTIO does not yet interpret these generators into specific
     # first-class schema objects (e.x. color matte, bars, etc.), the
-    # "artificial" mediaSources on clipitem and generatoritem both interpret as
+    # "artificial" mediaSources on clip item and generatoritem both interpret as
     # generator references. So, for the moment, to detect if likely have the
     # metadata to make an fcp 7 style generatoritem we look for the effecttype
     # field, if that is missing we write the generator using mediaSource in the
@@ -1697,7 +1697,7 @@ def _build_generator_effect(clip_item, br_map):
     """
     Builds an effect element for the generator ref on the provided clip item.
 
-    :param clip_item: a clip with a :class: `schema.GeneratorReference` as
+    :param clip_item: a clip with a :class:`schema.GeneratorReference` as
         its ``media_reference``.
     :param br_map: The backreference map.
     """
@@ -1856,8 +1856,8 @@ def _build_timecode_from_metadata(time, tc_metadata=None):
     Makes a timecode element with the given time and (if available)
     ```timecode`` metadata stashed on input.
 
-    :param time: The :class: `opentime.RationalTime` to encode.
-    :param tc_metadata: The xml dict for the ``timecode`` element populated
+    :param time: The :class:`opentime.RationalTime` to encode.
+    :param tc_metadata: The XML dict for the ``timecode`` element populated
         on read.
 
     :return: A timecode element.

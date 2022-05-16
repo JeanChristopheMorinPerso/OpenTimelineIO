@@ -3,7 +3,7 @@
 
 """
 MediaLinker plugins fire after an adapter has read a file in order to
-produce :class:`.MediaReference`\s that point at valid, site specific media.
+produce :class:`.MediaReference`\'s that point at valid, site specific media.
 
 They expose a ``link_media_reference`` function with the signature:
 

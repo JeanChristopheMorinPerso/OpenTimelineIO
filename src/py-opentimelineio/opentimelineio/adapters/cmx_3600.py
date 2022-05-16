@@ -1,11 +1,15 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright Contributors to the OpenTimelineIO project
 
-"""OpenTimelineIO CMX 3600 EDL Adapter"""
+"""
+OpenTimelineIO CMX 3600 EDL Adapter
 
-# Note: this adapter is not an ideal model for new adapters, but it works.
-# If you want to write your own adapter, please see:
-# https://opentimelineio.readthedocs.io/en/latest/tutorials/write-an-adapter.html#
+.. note::
+
+    This adapter is not an ideal model for new adapters, but it works.
+    If you want to write your own adapter, please see:
+    https://opentimelineio.readthedocs.io/en/latest/tutorials/write-an-adapter.html#
+"""
 
 # TODO: Flesh out Attribute Handler
 # TODO: Add line numbers to errors and warnings
@@ -100,9 +104,9 @@ class EDLParser(object):
             )
 
         # Add reel name to metadata
-        # A reel name of `AX` represents an unknown or auxilary source
-        # We don't currently track these sources outside of this adapter
-        # So lets skip adding AX reels as metadata for now,
+        # A reel name of `AX` represents an unknown or auxiliary source
+        # We don't currently track these sources outside this adapter
+        # So let's skip adding AX reels as metadata for now,
         # as that would dirty json outputs with non-relevant information
         if clip_handler.reel and clip_handler.reel != 'AX':
             clip.metadata.setdefault("cmx_3600", {})
@@ -156,7 +160,7 @@ class EDLParser(object):
             elif self.ignore_timecode_mismatch:
                 # Pretend there was no problem by adjusting the record_out.
                 # Note that we don't actually use record_out after this
-                # point in the code, since all of the subsequent math uses
+                # point in the code, since all the subsequent math uses
                 # the clip's source_range. Adjusting the record_out is
                 # just to document what the implications of ignoring the
                 # mismatch here entails.
@@ -251,7 +255,7 @@ class EDLParser(object):
 
     def parse_edl(self, edl_string, rate=24):
         # edl 'events' can be comprised of an indeterminate amount of lines
-        # we are to translating 'events' to a single clip and transition
+        # we are translating 'events' to a single clip and transition
         # then we add the transition and the clip to all channels the 'event'
         # channel code is mapped to the transition given in the 'event'
         # precedes the clip
@@ -387,6 +391,11 @@ class ClipHandler(object):
         return ref
 
     def make_clip(self, comment_data):
+        """
+
+        :param comment_data:
+        :return:
+        """
         clip = schema.Clip()
         clip.name = str(self.clip_num)
 
@@ -540,15 +549,20 @@ class ClipHandler(object):
         return clip
 
     def parse(self, line):
+        """
+
+        :param line:
+        :return:
+        """
         fields = tuple(e.strip() for e in line.split() if e.strip())
         field_count = len(fields)
 
         if field_count == 9:
             # has transition data
             # this is for edits with timing or other needed info
-            # transition data for D and W*** transitions is a n integer that
+            # transition data for D and W*** transitions is an integer that
             # denotes frame count
-            # i haven't figured out how the key transitions (K, KB, KO) work
+            # I haven't figured out how the key transitions (K, KB, KO) work
             (
                 self.clip_num,
                 self.reel,
@@ -622,6 +636,10 @@ class CommentHandler(object):
     ])
 
     def __init__(self, comments):
+        """
+
+        :param comments:
+        """
         self.handled = {}
         self.unhandled = []
         for comment in comments:
@@ -831,7 +849,6 @@ def _transition_clips_continuous(clip_a, clip_b):
         - or -
         2d. Both clips are gaps
 
-
     This is specific to how this adapter parses EDLs and is meant to be run only
     within _expand_transitions.
     """
@@ -843,7 +860,7 @@ def _transition_clips_continuous(clip_a, clip_b):
         return True
 
     # The time ranges are continuous, match the names
-    if (clip_a.name == clip_b.name):
+    if clip_a.name == clip_b.name:
         return True
 
     def reelname(clip):
@@ -875,18 +892,19 @@ def read_from_string(input_str, rate=24, ignore_timecode_mismatch=False):
     timecode based on the source timecode and adjacent cuts.
     For best results, you may wish to do something like this:
 
-    Example:
-        >>> try:
-        ...     timeline = otio.adapters.read_from_string("mymovie.edl", rate=30)
-        ... except EDLParseError:
-        ...    print('Log a warning here')
-        ...    try:
-        ...        timeline = otio.adapters.read_from_string(
-        ...            "mymovie.edl",
-        ...            rate=30,
-        ...            ignore_timecode_mismatch=True)
-        ...    except EDLParseError:
-        ...        print('Log an error here')
+    .. code-block:: python
+
+        try:
+            timeline = otio.adapters.read_from_string("mymovie.edl", rate=30)
+        except EDLParseError:
+           print('Log a warning here')
+           try:
+               timeline = otio.adapters.read_from_string(
+                   "mymovie.edl",
+                   rate=30,
+                   ignore_timecode_mismatch=True)
+           except EDLParseError:
+               print('Log an error here')
     """
     parser = EDLParser(
         input_str,
@@ -899,6 +917,14 @@ def read_from_string(input_str, rate=24, ignore_timecode_mismatch=False):
 
 
 def write_to_string(input_otio, rate=None, style='avid', reelname_len=8):
+    """
+
+    :param input_otio:
+    :param rate:
+    :param style:
+    :param reelname_len:
+    :return:
+    """
     # TODO: We should have convenience functions in Timeline for this?
     # also only works for a single video track at the moment
 
@@ -939,6 +965,13 @@ def write_to_string(input_otio, rate=None, style='avid', reelname_len=8):
 
 class EDLWriter(object):
     def __init__(self, tracks, rate, style, reelname_len=8):
+        """
+
+        :param tracks:
+        :param rate:
+        :param style:
+        :param reelname_len:
+        """
         self._tracks = tracks
         self._rate = rate
         self._style = style
@@ -1084,6 +1117,15 @@ class Event(object):
         style,
         reelname_len
     ):
+        """
+
+        :param clip:
+        :param tracks:
+        :param kind:
+        :param rate:
+        :param style:
+        :param reelname_len:
+        """
 
         line = EventLine(kind, rate, reel=_reel_from_clip(clip, reelname_len))
         line.source_in = clip.source_range.start_time
@@ -1131,11 +1173,11 @@ class Event(object):
 
     def to_edl_format(self):
         """
-        Example output:
+        Example output: ::
+
             002 AX V C        00:00:00:00 00:00:00:05 00:00:00:05 00:00:00:10
             * FROM CLIP NAME:  test clip2
             * FROM FILE: S:\\var\\tmp\\test.exr
-
         """
         lines = [self.line.to_edl_format(self.edit_number)]
         lines += self.comments if len(self.comments) else []
@@ -1231,25 +1273,30 @@ class DissolveEvent(object):
         """
         Example output:
 
-        Cross dissolve...
-        002 Clip1 V C     00:00:07:08 00:00:07:08 00:00:01:21 00:00:01:21
-        002 Clip2 V D 100 00:00:09:07 00:00:17:15 00:00:01:21 00:00:10:05
-        * FROM CLIP NAME:  Clip1
-        * FROM CLIP: /var/tmp/clip1.001.exr
-        * TO CLIP NAME:  Clip2
-        * TO CLIP: /var/tmp/clip2.001.exr
+        Cross dissolve... ::
 
-        Fade in...
-        001 BL      V C     00:00:00:00 00:00:00:00 00:00:00:00 00:00:00:00
-        001 My_Clip V D 012 00:00:02:02 00:00:03:04 00:00:00:00 00:00:01:02
-        * TO CLIP NAME:  My Clip
-        * TO FILE: /var/tmp/clip.001.exr
+            002 Clip1 V C     00:00:07:08 00:00:07:08 00:00:01:21 00:00:01:21
+            002 Clip2 V D 100 00:00:09:07 00:00:17:15 00:00:01:21 00:00:10:05
+            * FROM CLIP NAME:  Clip1
+            * FROM CLIP: /var/tmp/clip1.001.exr
+            * TO CLIP NAME:  Clip2
+            * TO CLIP: /var/tmp/clip2.001.exr
+
+        Fade in... ::
+
+            001 BL      V C     00:00:00:00 00:00:00:00 00:00:00:00 00:00:00:00
+            001 My_Clip V D 012 00:00:02:02 00:00:03:04 00:00:00:00 00:00:01:02
+            * TO CLIP NAME:  My Clip
+            * TO FILE: /var/tmp/clip.001.exr
 
         Fade out...
-        002 My_Clip V C     00:00:01:12 00:00:01:12 00:00:00:12 00:00:00:12
-        002 BL      V D 012 00:00:00:00 00:00:00:12 00:00:00:12 00:00:01:00
-        * FROM CLIP NAME:  My Clip
-        * FROM FILE: /var/tmp/clip.001.exr
+
+        ::
+
+            002 My_Clip V C     00:00:01:12 00:00:01:12 00:00:00:12 00:00:00:12
+            002 BL      V D 012 00:00:00:00 00:00:00:12 00:00:00:12 00:00:01:00
+            * FROM CLIP NAME:  My Clip
+            * FROM FILE: /var/tmp/clip.001.exr
         """
 
         lines = [

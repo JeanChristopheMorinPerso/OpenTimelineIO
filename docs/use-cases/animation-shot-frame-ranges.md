@@ -6,15 +6,16 @@
 
 This case is very similar to the
 [](/use-cases/shots-added-removed-from-cut).
+This case is very similar to the [Shots Added/Removed from the Cut Use Case].
 The editorial and animation departments are working with a sequence of shots simultaneously over the course of a few
 weeks. The initial delivery of rendered video clips from animation to editorial provides enough footage for the
 editor(s) to work with, at least as a starting point. As the cut evolves, the editor(s) may need more frames at the
 head or tail of some shots, or they may trim frames from the head or tail that are no longer needed. Usually there is
 an agreement that some extra frames, called handles, should be present at the head and tail of each shot to give the
 editors some flexibility. In the case where the editors need more frames than the handles provide, they might use a
-freeze frame effect, or a slow down effect to stretch the clip, or simply repeat a segment of a clip to fill the gap.
-This is a sign that new revisions of those shots should be animated and rendered with more frames to fill the needs of
-the cut. Furthermore, as the sequence nears completion, the cut becomes more stable and the cost of rendering frames
+freeze-frame effect, or a slow-down effect to stretch the clip, or simply repeat a segment of a clip to fill the gap.
+This is a sign that new revisions of those shots should be animated and rendered with more frames to fill in the cut. 
+Furthermore, as the sequence nears completion, the cut becomes more stable and the cost of rendering frames
 becomes higher, so there is a desire to trim unused handles from the shots on the animation side. In both cases, we
 can use OTIO to compare the frame range of each shot between the two departments.
 
@@ -58,3 +59,6 @@ those shots is now longer.
 
 - Use OTIO to read the EDL or AAF
 - Iterate through every Clip in the Timeline, printing its name and visible frame range
+
+[Conform New Renders into the Cut]: conform-new-renders-into-cut.md
+[Shots Added/Removed from the Cut Use Case]: shots-added-removed-from-cut.md

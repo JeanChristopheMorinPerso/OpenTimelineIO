@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes OpenTimelineIO's file bundle formats, otiod and otioz.  The intent is that they make it easier to package and send or archive OpenTimelineIO data and associated media.
+This document describes OpenTimelineIO's file bundle formats, `.otiod` and `.otioz`.  The intent is that they make it easier to package and send or archive OpenTimelineIO data and associated media.
 
 ## Source Timeline
 
@@ -68,7 +68,7 @@ When running in `AllMissing` mode, no media will be put into the bundle.
 
 ## OTIOD
 
-The OTIOD adapter will build a bundle in a directory stucture on disk.  The adapter will gather up all the files it can and copy them to the destination directory, and then build the `.otio` file with local relative path references into that directory.
+The OTIOD adapter will build a bundle in a directory structure on disk.  The adapter will gather all the files it can and copy them to the destination directory, and then build the `.otio` file with local relative path references into that directory.
 
 ## OTIOZ
 

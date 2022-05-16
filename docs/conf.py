@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright Contributors to the OpenTimelineIO project
 import re
+import typing
 
 import sphinx_rtd_theme
 import opentimelineio
@@ -31,6 +32,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
+    'sphinx.ext.napoleon',
     'myst_parser',  # This plugin is used to format our markdown correctly
 ]
 
@@ -106,7 +108,7 @@ def process_signature(
     what: str,
     name: str,
     obj: object,
-    options: dict[str, str],
+    options: typing.Dict[str, str],
     signature: str,
     return_annotation,
 ):
@@ -138,7 +140,8 @@ def process_signature(
                 nameToMatch = name.split(".")[-1] if not isClass else "__init__"
 
                 # Maybe get use sphinx.util.inspect.signature_from_str ?
-                if match := re.search(f"^\d+\.\s{nameToMatch}(\(.*)", line):
+                match = re.search(f"^\d+\.\s{nameToMatch}(\(.*)", line)
+                if match:
                     signatures.append(match.group(1))
         elif signature:
             signatures.append(signature)
@@ -159,8 +162,8 @@ def process_docstring(
     what: str,
     name: str,
     obj: object,
-    options: dict[str, str],
-    lines: list[str],
+    options: typing.Dict[str, str],
+    lines: typing.List[str],
 ):
     for index, line in enumerate(lines):
         if re.match(f'\d+\. {name.split("."[0])}', line):

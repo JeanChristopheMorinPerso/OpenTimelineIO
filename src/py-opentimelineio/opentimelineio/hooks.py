@@ -141,8 +141,8 @@ def available_hookscripts():
 
 
 def scripts_attached_to(hook):
-    """Return an editable list of all the hook scriptss that are attached to
-    the specified hook, in execution order.  Changing this list will change the
+    """Return an editable list of all the hook scripts that are attached to
+    the specified ``hook``, in execution order.  Changing this list will change the
     order that scripts run in, and deleting a script will remove it from
     executing
     """
@@ -152,11 +152,11 @@ def scripts_attached_to(hook):
 
 
 def run(hook, tl, extra_args=None):
-    """Run all the scripts associated with hook, passing in tl and extra_args.
+    """Run all the scripts associated with hook, passing in ``tl`` and ``extra_args``.
 
     Will return the return value of the last hook script.
 
-    If no hookscripts are defined, returns tl.
+    If no ``hook`` scripts are defined, returns ``tl``.
     """
 
     hook_scripts = plugins.ActiveManifest().hooks[hook]

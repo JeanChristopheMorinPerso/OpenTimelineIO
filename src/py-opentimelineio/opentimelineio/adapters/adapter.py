@@ -1,10 +1,31 @@
-# SPDX-License-Identifier: Apache-2.0
+#
 # Copyright Contributors to the OpenTimelineIO project
+#
+# Licensed under the Apache License, Version 2.0 (the "Apache License")
+# with the following modification; you may not use this file except in
+# compliance with the Apache License and the following modification to it:
+# Section 6. Trademarks. is deleted and replaced with:
+#
+# 6. Trademarks. This License does not grant permission to use the trade
+#    names, trademarks, service marks, or product names of the Licensor
+#    and its affiliates, except as required to comply with Section 4(c) of
+#    the License and to reproduce the content of the NOTICE file.
+#
+# You may obtain a copy of the Apache License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the Apache License with the above modification is
+# distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the Apache License for the specific
+# language governing permissions and limitations under the Apache License.
+#
 
 """Implementation of the OTIO internal `Adapter` system.
 
 For information on writing adapters, please consult:
-https://opentimelineio.readthedocs.io/en/latest/tutorials/write-an-adapter.html # noqa
+    https://opentimelineio.readthedocs.io/en/latest/tutorials/write-an-adapter.html# # noqa
 """
 
 import inspect
@@ -45,7 +66,8 @@ class Adapter(plugins.PythonPlugin):
     to OTIO.  You should not need to extend this class to create new adapters
     for OTIO.
 
-    For more information: https://opentimelineio.readthedocs.io/en/latest/tutorials/write-an-adapter.html. # noqa
+    For more information:
+    `Write An Adapter <https://opentimelineio.readthedocs.io/en/latest/tutorials/write-an-adapter.html>`_ # noqa
     """
     _serializable_label = "Adapter.1"
 
@@ -74,9 +96,9 @@ class Adapter(plugins.PythonPlugin):
     def has_feature(self, feature_string):
         """
         return true if adapter supports feature_string, which must be a key
-        of the _FEATURE_MAP dictionary.
+        of the ``_FEATURE_MAP`` dictionary.
 
-        Will trigger a call to :meth:`.PythonPlugin.module`, which imports the plugin.
+        Will trigger a call to :py:meth:`.module`, which imports the plugin.
         """
 
         if feature_string.lower() not in _FEATURE_MAP:
@@ -98,9 +120,9 @@ class Adapter(plugins.PythonPlugin):
         hook_function_argument_map=None,
         **adapter_argument_map
     ):
-        """Execute the read_from_file function on this adapter.
+        """Execute the ``read_from_file`` function on this adapter.
 
-        If read_from_string exists, but not read_from_file, execute that with
+        If ``read_from_string`` exists, but not ``read_from_file``, execute that with
         a trivial file object wrapper.
         """
 
@@ -167,9 +189,9 @@ class Adapter(plugins.PythonPlugin):
         hook_function_argument_map=None,
         **adapter_argument_map
     ):
-        """Execute the write_to_file function on this adapter.
+        """Execute the ``write_to_file`` function on this adapter.
 
-        If write_to_string exists, but not write_to_file, execute that with
+        If ``write_to_string`` exists, but not ``write_to_file``, execute that with
         a trivial file object wrapper.
         """
 
@@ -218,7 +240,7 @@ class Adapter(plugins.PythonPlugin):
         hook_function_argument_map=None,
         **adapter_argument_map
     ):
-        """Call the read_from_string function on this adapter."""
+        """Call the ``read_from_string`` function on this adapter."""
 
         result = self._execute_function(
             "read_from_string",
@@ -266,7 +288,7 @@ class Adapter(plugins.PythonPlugin):
         hook_function_argument_map=None,
         **adapter_argument_map
     ):
-        """Call the write_to_string function on this adapter."""
+        """Call the ``write_to_string`` function on this adapter."""
 
         hook_function_argument_map = copy.deepcopy(
             hook_function_argument_map or {}
@@ -317,7 +339,7 @@ class Adapter(plugins.PythonPlugin):
         )
 
     def plugin_info_map(self):
-        """Adds extra adapter-specific information to call to the parent fn."""
+        """Adds extra adapter-specific information to call to the parent function."""
 
         result = super(Adapter, self).plugin_info_map()
 
@@ -351,9 +373,9 @@ def _with_linked_media_references(
     media_linker_name,
     media_linker_argument_map
 ):
-    """Link media references in the read_otio if possible.
+    """Link media references in the ``read_otio`` if possible.
 
-    Makes changes in place and returns the read_otio structure back.
+    Makes changes in place and returns the ``read_otio`` structure back.
     """
 
     if not read_otio or not media_linker.from_name(media_linker_name):

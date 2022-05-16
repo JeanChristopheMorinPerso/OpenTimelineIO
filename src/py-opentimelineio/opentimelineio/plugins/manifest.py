@@ -7,8 +7,8 @@ import inspect
 import logging
 import os
 
-# In some circumstances pkg_resources has bad performance characteristics.
-# Using the envirionment variable: $OTIO_DISABLE_PKG_RESOURCE_PLUGINS disables
+# In some circumstances, pkg_resources has bad performance characteristics.
+# Using the environment variable: $OTIO_DISABLE_PKG_RESOURCE_PLUGINS disables
 # OpenTimelineIO's import and of use of the pkg_resources module.
 if os.environ.get("OTIO_DISABLE_PKG_RESOURCE_PLUGINS", False):
     pkg_resources = None
@@ -36,7 +36,7 @@ OTIO_PLUGIN_TYPES = [
 
 
 def manifest_from_file(filepath):
-    """Read the .json file at filepath into a :py:class:`Manifest` object."""
+    """Read the JSON file at filepath into a :py:class:`Manifest` object."""
 
     result = core.deserialize_json_from_file(filepath)
     absfilepath = os.path.abspath(filepath)
@@ -75,7 +75,7 @@ class Manifest(core.SerializableObject):
     or other features (in the case of adapters, what file suffixes they
     advertise support for).
 
-    For more information, consult the documenation.
+    For more information, consult the documentation.
     """
     _serializable_label = "PluginManifest.1"
 

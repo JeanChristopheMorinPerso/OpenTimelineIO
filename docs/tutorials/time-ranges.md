@@ -2,7 +2,7 @@
 
 ## Overview
 
-A Timeline and all of the Tracks and Stacks it contains work together to place
+A Timeline and all the Tracks and Stacks it contains work together to place
 the Clips, Gaps and Transitions relative to each other in time. You can think
 of this as a 1-dimensional coordinate system. Simple cases of assembling Clips
 into a Track will lay the Clips end-to-end, but more complex cases involve
