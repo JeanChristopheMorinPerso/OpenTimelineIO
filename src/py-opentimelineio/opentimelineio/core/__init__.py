@@ -35,10 +35,7 @@ from . _core_utils import ( # noqa
     _add_mutable_sequence_methods,
 )
 from . import ( # noqa
-    mediaReference,
     composition,
-    # composable,
-    # item,
 )
 
 __all__ = [

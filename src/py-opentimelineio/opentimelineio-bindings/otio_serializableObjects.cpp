@@ -1000,7 +1000,8 @@ static void define_media_references(py::module m) {
         .def_property("available_image_bounds", &MediaReference::available_image_bounds, &MediaReference::set_available_image_bounds) 
         .def_property_readonly("is_missing_reference", &MediaReference::is_missing_reference)
         .def("__repr__", [](MediaReference* mr) {
-            return "asd.{}(name=\"{}\", available_range={}, metadata={})"_s.format(
+            // "core" if self.__class__ is _otio.MediaReference else "schema",
+            return "opentimelineio.schema.{}(name=\"{}\", available_range={}, metadata={})"_s.format(
                 py::cast(mr).attr("__class__").attr("__name__"),
                 mr->name(),
                 mr->available_range(),
@@ -1008,7 +1009,7 @@ static void define_media_references(py::module m) {
             );
         })
         .def("__str__", [](MediaReference* mr) {
-            return "asd.{}(name=\"{}\", available_range={}, metadata={})"_s.format(
+            return "opentimelineio.schema.{}(name=\"{}\", available_range={}, metadata={})"_s.format(
                 py::cast(mr).attr("__class__").attr("__name__"),
                 mr->name(),
                 mr->available_range(),
@@ -1036,7 +1037,28 @@ static void define_media_references(py::module m) {
         .def_property("generator_kind", &GeneratorReference::generator_kind, &GeneratorReference::set_generator_kind)
         .def_property_readonly("parameters", [](GeneratorReference* g) {
                 auto ptr = g->parameters().get_or_create_mutation_stamp();
-                return (AnyDictionaryProxy*)(ptr); }, py::return_value_policy::take_ownership);
+                return (AnyDictionaryProxy*)(ptr); }, py::return_value_policy::take_ownership)
+        .def("__repr__", [](GeneratorReference* g) {
+            // "core" if self.__class__ is _otio.MediaReference else "schema",
+            return "opentimelineio.schema.{}(name=\"{}\", generator_kind={}, parameters={}, available_image_bounds={}, metadata={})"_s.format(
+                py::cast(g).attr("__class__").attr("__name__"),
+                g->name(),
+                g->generator_kind(),
+                repr(g->parameters()),
+                repr(g->available_image_bounds()),
+                get_metadata_proxy(g)
+            );
+        })
+        .def("__str__", [](GeneratorReference* g) {
+            return "opentimelineio.schema.{}({}, {}, {}, {}, {})"_s.format(
+                py::cast(g).attr("__class__").attr("__name__"),
+                g->name(),
+                g->generator_kind(),
+                g->parameters(),
+                g->available_image_bounds(),
+                get_metadata_proxy(g)
+            );
+        });
 
 
     py::class_<MissingReference, MediaReference,
@@ -1061,7 +1083,7 @@ Note that a :class:`~MissingReference` may have useful metadata, even if the loc
              py::arg_v("metadata"_a = py::none()),
              "available_image_bounds"_a = nullopt)
         .def("__repr__", [](MissingReference* r) {
-            return "asdasd.{}(name=\"{}\", available_range={}, metadata={})"_s.format(
+            return "opentimelineio.schema.{}(name=\"{}\", available_range={}, metadata={})"_s.format(
                 py::cast(r).attr("__class__").attr("__name__"),
                 r->name(),
                 r->available_range(),
@@ -1069,7 +1091,7 @@ Note that a :class:`~MissingReference` may have useful metadata, even if the loc
             );
         })
         .def("__str__", [](MissingReference* r) {
-            return "asdasd.{}(name=\"{}\", available_range={})"_s.format(
+            return "opentimelineio.schema.{}(name=\"{}\", available_range={})"_s.format(
                 py::cast(r).attr("__class__").attr("__name__"),
                 r->name(),
                 r->available_range()
@@ -1091,7 +1113,19 @@ Note that a :class:`~MissingReference` may have useful metadata, even if the loc
              "available_range"_a = nullopt,
              py::arg_v("metadata"_a = py::none()),
              "available_image_bounds"_a = nullopt)
-        .def_property("target_url", &ExternalReference::target_url, &ExternalReference::set_target_url);
+        .def_property("target_url", &ExternalReference::target_url, &ExternalReference::set_target_url)
+        .def("__repr__", [](ExternalReference* er) {
+            return "opentimelineio.schema.{}(target_url={})"_s.format(
+                py::cast(er).attr("__class__").attr("__name__"),
+                er->target_url()
+            );
+        })
+        .def("__str__", [](ExternalReference* er) {
+            return "opentimelineio.schema.{}({})"_s.format(
+                py::cast(er).attr("__class__").attr("__name__"),
+                er->target_url()
+            );
+        });
 
     auto imagesequencereference_class = py:: class_<ImageSequenceReference, MediaReference,
             managing_ptr<ImageSequenceReference>>(m, "ImageSequenceReference", py::dynamic_attr(), R"docstring(
@@ -1233,7 +1267,39 @@ This is roughly equivalent to:
                         image_number,
                         ErrorStatusHandler()
                 );
-        }, "image_number"_a, "Given an image number, returns the :class:`.RationalTime` at which that image should be shown in the space of :attr:`.available_range`.");
+        }, "image_number"_a, "Given an image number, returns the :class:`.RationalTime` at which that image should be shown in the space of :attr:`.available_range`.")
+        .def("__repr__", [](ImageSequenceReference *seq_ref) {
+            return "opentimelineio.schema.{}(target_url_base={}, name_prefix={}, name_suffix={}, start_frame={}, frame_step={}, rate={}, frame_zero_padding={}, missing_frame_policy={}, available_range={}, available_image_bounds={}, metadata={})"_s.format(
+                py::cast(seq_ref).attr("__class__").attr("__name__"),
+                seq_ref->target_url_base(),
+                seq_ref->name_prefix(),
+                seq_ref->name_suffix(),
+                seq_ref->start_frame(),
+                seq_ref->frame_step(),
+                seq_ref->rate(),
+                seq_ref->frame_zero_padding(),
+                seq_ref->missing_frame_policy(),
+                seq_ref->available_range(),
+                seq_ref->available_image_bounds(),
+                get_metadata_proxy(seq_ref)
+            );
+        })
+        .def("__str__", [](ImageSequenceReference *seq_ref) {
+            return "opentimelineio.schema.{}({})"_s.format(
+                py::cast(seq_ref).attr("__class__").attr("__name__"),
+                seq_ref->target_url_base(),
+                seq_ref->name_prefix(),
+                seq_ref->name_suffix(),
+                seq_ref->start_frame(),
+                seq_ref->frame_step(),
+                seq_ref->rate(),
+                seq_ref->frame_zero_padding(),
+                seq_ref->missing_frame_policy(),
+                seq_ref->available_range(),
+                seq_ref->available_image_bounds(),
+                get_metadata_proxy(seq_ref)
+            );
+        });
 
 }
 

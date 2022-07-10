@@ -10,6 +10,7 @@
 #include "ImathVec.h"
 
 namespace py = pybind11;
+using namespace pybind11::literals;
 
 template <typename CLASS>
 CLASS _type_checked(py::object const& rhs, char const* op) {
@@ -98,7 +99,21 @@ static void define_imath_2d(py::module m) {
             })
         .def_static("dimensions", []() {
                 return Imath::V2d::dimensions();
-            });
+            })
+        .def("__repr__", [](Imath::V2d* v) {
+            return "opentimelineio.schema.{}(x={}, y={})"_s.format(
+                py::cast(v).attr("__class__").attr("__name__"),
+                v->x,
+                v->y
+            );
+        })
+        .def("__str__", [](Imath::V2d* v) {
+            return "opentimelineio.schema.{}({}, {})"_s.format(
+                py::cast(v).attr("__class__").attr("__name__"),
+                v->x,
+                v->y
+            );
+        });
 
     py::class_<Imath::Box2d>(m, "Box2d", py::module_local())
         .def(py::init<>())
@@ -124,6 +139,20 @@ static void define_imath_2d(py::module m) {
         })
         .def("intersects", [](Imath::Box2d* box, Imath::Box2d const& rhs ) {
             return box->intersects(rhs); 
+        })
+        .def("__repr__", [](Imath::Box2d* b) {
+            return "opentimelineio.schema.{}(min={}, max={})"_s.format(
+                py::cast(b).attr("__class__").attr("__name__"),
+                b->min,
+                b->max
+            );
+        })
+        .def("__str__", [](Imath::Box2d* b) {
+            return "opentimelineio.schema.{}({}, {})"_s.format(
+                py::cast(b).attr("__class__").attr("__name__"),
+                b->min,
+                b->max
+            );
         });
 }
 
