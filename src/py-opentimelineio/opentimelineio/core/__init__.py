@@ -2,6 +2,7 @@
 # Copyright Contributors to the OpenTimelineIO project
 
 """Core implementation details and wrappers around the C++ library"""
+from typing import Type, Any, Dict, Optional
 
 from .. _otio import ( # noqa
     # errors
@@ -72,22 +73,21 @@ __all__ = [
 ]
 
 
-def serialize_json_to_string(root, schema_version_targets=None, indent=4):
+def serialize_json_to_string(root: SerializableObject, schema_version_targets: Optional[Dict[str, int]]=None, indent: int=4) -> str:
     """Serialize root to a json string.  Optionally downgrade resulting schemas
     to schema_version_targets.
 
-    :param SerializableObject root: root object to serialize
-    :param dict[str, int] schema_version_targets: optional dictionary mapping
-                                                  schema name to desired schema
-                                                  version, for downgrading the
-                                                  result to be compatible with
-                                                  older versions of
-                                                  OpenTimelineIO.
-    :param int indent: number of spaces for each json indentation level. Use -1
-                       for no indentation or newlines.
+    :param root: root object to serialize
+    :param schema_version_targets: optional dictionary mapping
+                                   schema name to desired schema
+                                   version, for downgrading the
+                                   result to be compatible with
+                                   older versions of
+                                   OpenTimelineIO.
+    :param indent: number of spaces for each json indentation level. Use -1
+                   for no indentation or newlines.
 
     :returns: resulting json string
-    :rtype: str
     """
     return _serialize_json_to_string(
         _value_to_any(root),
@@ -97,26 +97,25 @@ def serialize_json_to_string(root, schema_version_targets=None, indent=4):
 
 
 def serialize_json_to_file(
-        root,
-        filename,
-        schema_version_targets=None,
-        indent=4
-):
+        root: SerializableObject,
+        filename: str,
+        schema_version_targets: Optional[Dict[str, int]]=None,
+        indent: int=4
+) -> bool:
     """Serialize root to a json file.  Optionally downgrade resulting schemas
     to schema_version_targets.
 
-    :param SerializableObject root: root object to serialize
-    :param dict[str, int] schema_version_targets: optional dictionary mapping
+    :param root: root object to serialize
+    :param schema_version_targets: optional dictionary mapping
                                                   schema name to desired schema
                                                   version, for downgrading the
                                                   result to be compatible with
                                                   older versions of
                                                   OpenTimelineIO.
-    :param int indent: number of spaces for each json indentation level. Use -1
+    :param indent: number of spaces for each json indentation level. Use -1
                        for no indentation or newlines.
 
     :returns: true for success, false for failure
-    :rtype: bool
     """
     return _serialize_json_to_file(
         _value_to_any(root),
@@ -126,7 +125,7 @@ def serialize_json_to_file(
     )
 
 
-def register_type(classobj, schemaname: str=None):
+def register_type(classobj: Type[SerializableObject], schemaname: str=None):
     """Decorator for registering a SerializableObject type
 
     Example:
@@ -138,8 +137,8 @@ def register_type(classobj, schemaname: str=None):
           serializable_label = "SimpleClass.2"
           ...
 
-    :param typing.Type[SerializableObject] cls: class to register
-    :param str schemaname: Schema name (default: parse from serializable_label)
+    :param cls: class to register
+    :param schemaname: Schema name (default: parse from serializable_label)
     """
     label = classobj._serializable_label
     if schemaname is None:
@@ -159,7 +158,7 @@ def register_type(classobj, schemaname: str=None):
     return classobj
 
 
-def upgrade_function_for(cls, version_to_upgrade_to):
+def upgrade_function_for(cls: Type[SerializableObject], version_to_upgrade_to: int):
     """
     Decorator for identifying schema class upgrade functions.
 
@@ -181,8 +180,8 @@ def upgrade_function_for(cls, version_to_upgrade_to):
     that add or remove fields, only for schema versions that change the field
     names.
 
-    :param typing.Type[SerializableObject] cls: class to upgrade
-    :param int version_to_upgrade_to: the version to upgrade to
+    :param cls: class to upgrade
+    :param version_to_upgrade_to: the version to upgrade to
     """
 
     def decorator_func(func):
@@ -199,7 +198,7 @@ def upgrade_function_for(cls, version_to_upgrade_to):
     return decorator_func
 
 
-def downgrade_function_from(name: str, required_type: type=None, doc: str=None) -> property:
+def downgrade_function_from(cls: Type[SerializableObject], version_to_downgrade_from: int):
     """
     Decorator for identifying schema class downgrade functions.
 
@@ -218,8 +217,8 @@ def downgrade_function_from(name: str, required_type: type=None, doc: str=None) 
     The downgrade function should take a single argument - the dictionary to
     downgrade, and return a dictionary with the fields downgraded.
 
-    :param typing.Type[SerializableObject] cls: class to downgrade
-    :param int version_to_downgrade_from: the function downgrading from this
+    :param cls: class to downgrade
+    :param version_to_downgrade_from: the function downgrading from this
                                           version to (version - 1)
     """
 
@@ -240,7 +239,7 @@ def downgrade_function_from(name: str, required_type: type=None, doc: str=None) 
     return decorator_func
 
 
-def serializable_field(name, required_type=None, doc=None):
+def serializable_field(name: str, required_type: Type[Any]=None, doc: str=None) -> property:
     """
     Convenience function for adding attributes to child classes of
     :class:`~SerializableObject` in such a way that they will be serialized/deserialized
@@ -271,12 +270,9 @@ def serializable_field(name, required_type=None, doc=None):
     Additionally, the "doc" field will become the documentation for the
     property.
 
-    :param str name: name of the field to add
-    :param type required_type: type required for the field
-    :param str doc: field documentation
-
-    :return: property object
-    :rtype: :py:class:`property`
+    :param name: name of the field to add
+    :param required_type: type required for the field
+    :param doc: field documentation
     """
 
     def getter(self):

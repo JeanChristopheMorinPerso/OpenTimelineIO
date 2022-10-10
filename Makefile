@@ -1,5 +1,5 @@
 .PHONY: coverage test test_first_fail clean autopep8 lint doc-html \
-	python-version wheel manifest lcov lcov-html lcov-reset
+	python-version wheel manifest lcov lcov-html lcov-reset stubgen
 
 # Special definition to handle Make from stripping newlines
 define newline
@@ -304,3 +304,12 @@ start-dev-new-minor-version: \
 	version-map-update \
 	test-core
 	@echo "New version made.  Commit, push and open a PR!"
+
+stubgen:
+	$(eval TMP := $(shell mktemp -d))
+	pybind11-stubgen opentimelineio._otio opentimelineio._opentime -o $(TMP) --no-setup-py --root-module-suffix ''
+	for path in $$(find asd -name "*.pyi" -not -path "*/_testing/*"); do \
+		name=$$(basename $$(dirname "$$path")); \
+		cp "$$path" "src/py-opentimelineio/opentimelineio/$$name.pyi" ; \
+	done
+	rm -rf $(TMP)

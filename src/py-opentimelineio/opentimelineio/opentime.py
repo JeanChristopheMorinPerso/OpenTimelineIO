@@ -39,7 +39,7 @@ duration_from_start_end_time_inclusive = (
 )
 
 
-def to_timecode(rt: RationalTime, rate: float=None, drop_frame: Optional[bool]=None) -> str:
+def to_timecode(rt: RationalTime, rate: Optional[float]=None, drop_frame: Optional[bool]=None) -> str:
     """Convert a :class:`~RationalTime` into a timecode string."""
     return (
         rt.to_timecode()
@@ -48,7 +48,7 @@ def to_timecode(rt: RationalTime, rate: float=None, drop_frame: Optional[bool]=N
     )
 
 
-def to_frames(rt: RationalTime, rate: float=None) -> int:
+def to_frames(rt: RationalTime, rate: Optional[float]=None) -> int:
     """Turn a :class:`~RationalTime` into a frame number."""
     return rt.to_frames() if rate is None else rt.to_frames(rate)
 

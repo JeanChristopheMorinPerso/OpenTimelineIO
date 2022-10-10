@@ -10,7 +10,7 @@ from __future__ import annotations
 import inspect
 import collections
 import copy
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional, List, Dict
 
 from .. import (
     core,
@@ -21,7 +21,6 @@ from .. import (
 
 if TYPE_CHECKING:
     from ..schema import Timeline
-    from typing import Optional
 
 
 @core.register_type
@@ -51,7 +50,7 @@ class Adapter(plugins.PythonPlugin):
         self,
         name: str=None,
         filepath: str=None,
-        suffixes: list[str]=None
+        suffixes: List[str]=None
     ):
         plugins.PythonPlugin.__init__(
             self,
@@ -61,7 +60,7 @@ class Adapter(plugins.PythonPlugin):
 
         self.suffixes = suffixes or []
 
-    suffixes: list[str] = core.serializable_field(
+    suffixes: List[str] = core.serializable_field(
         "suffixes",
         type([]),
         doc="File suffixes associated with this adapter."
@@ -90,8 +89,8 @@ class Adapter(plugins.PythonPlugin):
         self,
         filepath: str,
         media_linker_name=media_linker.MediaLinkingPolicy.ForceDefaultLinker,
-        media_linker_argument_map: 'Optional[dict]'=None,
-        hook_function_argument_map: 'Optional[dict]'=None,
+        media_linker_argument_map: Optional[Dict]=None,
+        hook_function_argument_map: Optional[Dict]=None,
         **adapter_argument_map
     ) -> 'Timeline':
         """Execute the read_from_file function on this adapter.

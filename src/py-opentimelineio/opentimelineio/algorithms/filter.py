@@ -2,17 +2,13 @@
 # Copyright Contributors to the OpenTimelineIO project
 
 """Algorithms for filtering OTIO files.  """
-from __future__ import annotations
-
 import copy
-from typing import TYPE_CHECKING
+from typing import Union, Callable, Any, List, Type, Optional
 
 from .. import (
-    schema
+    schema,
+    core
 )
-
-if TYPE_CHECKING:
-    from typing import Union, Callable, Any
 
 
 def _is_in(thing, container):
@@ -24,18 +20,12 @@ def _isinstance_in(child, typelist):
 
 
 def filtered_composition(
-    root: 'Union[schema.Timeline, schema.Track]',
-    unary_filter_fn: 'Callable',
-    types_to_prune: list[type]=None,
-) -> 'Union[schema.Timeline, schema.Track]':
+    root: Union[schema.Timeline, core.Composition, schema.SerializableCollection],
+    unary_filter_fn: Callable[[core.SerializableObject], Union[None, core.SerializableObject]],
+    types_to_prune: Optional[List[Type[Any]]]=None,
+) -> List[core.SerializableObject]:
     """
     Filter a deep copy of root (and children) with ``unary_filter_fn``.
-
-    The ``unary_filter_fn`` must have this signature:
-
-    .. py:function:: func(item: typing.Any) -> list[typing.Any]
-        :noindex:
-
 
     1. Make a deep copy of root
     2. Starting with root, perform a depth first traversal
@@ -92,9 +82,9 @@ def filtered_composition(
             filtered_composition(
                 track, lambda _:_, types_to_prune=(otio.schema.Gap,)) => [A]
 
-    :param SerializableObjectWithMetadata root: Object to filter on
+    :param root: Object to filter on
     :param unary_filter_fn: Filter function
-    :param tuple(type) types_to_prune: Types to prune. Example: (otio.schema.Gap,...)
+    :param types_to_prune: Types to prune. Example: (otio.schema.Gap,...)
     """
 
     # deep copy everything

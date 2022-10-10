@@ -201,9 +201,6 @@ static void define_bases1(py::module m) {
 }
 
 static void define_bases2(py::module m) {
-    MarkerVectorProxy::define_py_class(m, "MarkerVector");
-    EffectVectorProxy::define_py_class(m, "EffectVector");
-
     auto marker_class =
         py::class_<Marker, SOWithMetadata, managing_ptr<Marker>>(m, "Marker", py::dynamic_attr(), R"docstring(
 A marker indicates a marked range of time on an item in a timeline, usually with a name, color or other metadata.
@@ -241,6 +238,7 @@ The marked range may have a zero duration. The marked range is in the owning ite
         .def_property_readonly_static("BLACK", [](py::object /* self */) { return Marker::Color::black; })
         .def_property_readonly_static("WHITE", [](py::object /* self */) { return Marker::Color::white; });
 
+    MarkerVectorProxy::define_py_class(m, "MarkerVector");
 
     using SerializableCollectionIterator = ContainerIterator<SerializableCollection, SerializableObject*>;
     py::class_<SerializableCollectionIterator>(m, "SerializableCollectionIterator", py::dynamic_attr())
@@ -659,6 +657,8 @@ static void define_effects(py::module m) {
              "effect_name"_a = std::string(),
              py::arg_v("metadata"_a = py::none()))
         .def_property("effect_name", &Effect::effect_name, &Effect::set_effect_name);
+
+    EffectVectorProxy::define_py_class(m, "EffectVector");
 
     py::class_<TimeEffect, Effect, managing_ptr<TimeEffect>>(m, "TimeEffect", py::dynamic_attr(), "Base class for all effects that alter the timing of an item.")
         .def(py::init([](std::string name,
