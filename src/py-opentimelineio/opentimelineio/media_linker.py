@@ -54,9 +54,10 @@ def from_name(name: str) -> 'Optional[MediaLinker]':
     if not name:
         return None
 
+    manifest = plugins.ActiveManifest()
     # @TODO: make this handle the enums
     try:
-        return plugins.ActiveManifest().from_name(
+        return manifest.from_name(
             name,
             kind_list="media_linkers"
         )
@@ -122,7 +123,7 @@ class MediaLinker(plugins.PythonPlugin):
     def is_default_linker(self) -> bool:
         return os.environ.get("OTIO_DEFAULT_MEDIA_LINKER", "") == self.name
 
-    def plugin_info_map(self) -> dict[str, str]:
+    def plugin_info_map(self) -> dict[str, Optional[str]]:
         """Adds extra adapter-specific information to call to the parent fn."""
 
         result = super().plugin_info_map()

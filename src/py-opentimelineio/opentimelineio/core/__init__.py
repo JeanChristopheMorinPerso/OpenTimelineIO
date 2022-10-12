@@ -2,7 +2,12 @@
 # Copyright Contributors to the OpenTimelineIO project
 
 """Core implementation details and wrappers around the C++ library"""
-from typing import Type, Any, Dict, Optional
+import functools
+from typing import Type, Any, Dict, Optional, Callable, TypeVar, cast
+
+from typing_extensions import ParamSpec, Concatenate, reveal_type
+
+import _otio
 
 from .. _otio import ( # noqa
     # errors
@@ -125,7 +130,7 @@ def serialize_json_to_file(
     )
 
 
-def register_type(classobj: Type[SerializableObject], schemaname: str=None):
+def register_type(classobj: Type[SerializableObject], schemaname: Optional[str]=None):
     """Decorator for registering a SerializableObject type
 
     Example:
@@ -158,7 +163,11 @@ def register_type(classobj: Type[SerializableObject], schemaname: str=None):
     return classobj
 
 
-def upgrade_function_for(cls: Type[SerializableObject], version_to_upgrade_to: int):
+P = ParamSpec('P')
+R = TypeVar('R')
+
+
+def upgrade_function_for(cls: Type[SerializableObject], version_to_upgrade_to: int) -> Callable[P, R]:
     """
     Decorator for identifying schema class upgrade functions.
 
@@ -184,18 +193,55 @@ def upgrade_function_for(cls: Type[SerializableObject], version_to_upgrade_to: i
     :param version_to_upgrade_to: the version to upgrade to
     """
 
-    def decorator_func(func):
-        """ Decorator for marking upgrade functions """
-        def wrapped_update(data):
+    def decorator_func(func: Callable[Concatenate[_otio.AnyDictionary, P], R]) -> Callable[P, R]:
+        @functools.wraps(func)
+        def wrapped_update(*args: P.args, **kwargs: P.kwargs) -> R:
+            modified = func(*args)
+            args[0].clear()
+            args[0].update(modified)
+
+        register_upgrade_function(
+            cls._serializable_label.split(".")[0],
+            version_to_upgrade_to,
+            wrapped_update
+        )
+
+        return cast(Callable[P, R], func)
+
+    return cast(Callable[P, R], decorator_func)
+
+
+def upgrade_function_for_2(cls: Type[SerializableObject], version_to_upgrade_to: int) -> Callable[[Callable[[dict], None]], Callable[[dict], None]]:
+    def decorator_func(func: Callable[[dict], None]) -> Callable[[dict], None]:
+        @functools.wraps(func)
+        def wrapped_update(data: _otio.AnyDictionary) -> None:
             modified = func(data)
             data.clear()
             data.update(modified)
 
-        register_upgrade_function(cls._serializable_label.split(".")[0],
-                                  version_to_upgrade_to, wrapped_update)
+        register_upgrade_function(
+            cls._serializable_label.split(".")[0],
+            version_to_upgrade_to,
+            cast(Callable[[_otio.AnyDictionary], None], wrapped_update)
+        )
+
+        reveal_type(func)
         return func
 
-    return decorator_func
+    reveal_type(decorator_func)
+    return cast(Callable[[dict], None], decorator_func)
+
+
+# @upgrade_function_for(Composable, 1)
+# def asd(data: _otio.AnyDictionary):
+#     pass
+
+
+@upgrade_function_for_2(Composable, 1)
+def asd2(data: int):
+    pass
+
+asd2(1)
 
 
 def downgrade_function_from(cls: Type[SerializableObject], version_to_downgrade_from: int):

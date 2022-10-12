@@ -273,15 +273,15 @@ def _add_mutable_sequence_methods(
                         "slice of size {}".format(len(item), len(indices))
                     )
                 if not side_effecting_insertions:
-                    for i, e in enumerate(item):
-                        self.__internal_setitem__(indices[i], conversion_func(e))
+                    for index, subitem in enumerate(item):
+                        self.__internal_setitem__(indices[index], conversion_func(subitem))
                 else:
                     cached_items = list(self)
                     for index in reversed(indices):
                         self.__internal_del_item__(index)
                     try:
-                        for i, e in enumerate(item):
-                            self.__internal_insert(indices[i], e)
+                        for index, subitem in enumerate(item):
+                            self.__internal_insert(indices[index], subitem)
                     except Exception as e:
                         # restore the old state
                         while len(self):

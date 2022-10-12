@@ -6,7 +6,9 @@ from __future__ import annotations
 import inspect
 import logging
 import os
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
+
+from opentimelineio.plugins.python_plugin import PythonPlugin
 
 # In some circumstances pkg_resources has bad performance characteristics.
 # Using the envirionment variable: $OTIO_DISABLE_PKG_RESOURCE_PLUGINS disables
@@ -47,7 +49,7 @@ OTIO_PLUGIN_TYPES = [
 def manifest_from_file(filepath: str) -> 'Manifest':
     """Read the .json file at filepath into a :py:class:`Manifest` object."""
 
-    result = core.deserialize_json_from_file(filepath)
+    result: Manifest = cast(Manifest, core.deserialize_json_from_file(filepath))
     absfilepath = os.path.abspath(filepath)
     result.source_files.append(absfilepath)
     result._update_plugin_source(absfilepath)
@@ -57,7 +59,7 @@ def manifest_from_file(filepath: str) -> 'Manifest':
 def manifest_from_string(input_string: str) -> 'Manifest':
     """Deserialize the json string into a manifest object."""
 
-    result = core.deserialize_json_from_string(input_string)
+    result: Manifest = cast(Manifest, core.deserialize_json_from_string(input_string))
 
     # try and get the caller's name
     name = "unknown"
@@ -101,7 +103,7 @@ class Manifest(core.SerializableObject):
 
         self.version_manifests = {}
 
-    adapters = list[Adapter] = core.serializable_field(
+    adapters: list[Adapter] = core.serializable_field(
         "adapters",
         type([]),
         "Adapters this manifest describes."
@@ -191,7 +193,7 @@ class Manifest(core.SerializableObject):
 
     # @TODO: (breaking change) this should search all plugins by default instead
     #        of just adapters
-    def from_name(self, name: str, kind_list: str="adapters") -> Manifest:
+    def from_name(self, name: str, kind_list: str="adapters") -> PythonPlugin:
         """Return the plugin object associated with a given plugin name."""
 
         for thing in getattr(self, kind_list):
@@ -326,7 +328,7 @@ def load_manifest() -> Manifest:
 
     # the builtin plugin manifest
     builtin_manifest_path = os.path.join(
-        os.path.dirname(os.path.dirname(inspect.getsourcefile(core))),
+        os.path.dirname(os.path.dirname(cast(str, inspect.getsourcefile(core)))),
         "adapters",
         "builtin_adapters.plugin_manifest.json"
     )
@@ -339,7 +341,7 @@ def load_manifest() -> Manifest:
         import opentimelineio_contrib as otio_c
 
         contrib_manifest_path = os.path.join(
-            os.path.dirname(inspect.getsourcefile(otio_c)),
+            os.path.dirname(cast(str, inspect.getsourcefile(otio_c))),
             "adapters",
             "contrib_adapters.plugin_manifest.json"
         )
@@ -362,6 +364,6 @@ def ActiveManifest(force_reload: bool=False) -> Manifest:
 
     global _MANIFEST
     if not _MANIFEST or force_reload:
-        _MANIFEST = load_manifest()
+        _MANIFEST = cast(Manifest, load_manifest())
 
-    return _MANIFEST
+    return cast(Manifest, _MANIFEST)

@@ -8,7 +8,7 @@ import imp
 import inspect
 import collections
 import copy
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional, Union, Any
 
 from .. import (
     core,
@@ -20,8 +20,8 @@ from . import (
 )
 
 if TYPE_CHECKING:
-    from typing import Union, Any
     from types import ModuleType
+
 
 def plugin_info_map() -> 'dict[str, Union[list[str], dict[Any, Any]]]':
     result: 'dict[str, Union[list[str], dict[Any, Any]]]' = {}
@@ -59,17 +59,17 @@ class PythonPlugin(core.SerializableObject):
 
     def __init__(
         self,
-        name: str=None,
-        filepath: str=None,
+        name: Optional[str]=None,
+        filepath: Optional[str]=None,
     ):
-        core.SerializableObject.__init__(self)
+        super().__init__()
         self.name = name
         self.filepath = filepath
         self._json_path: str = None
         self._module: 'ModuleType' = None
 
-    name: str = core.serializable_field("name", doc="Adapter name.")
-    filepath: str = core.serializable_field(
+    name: Optional[str] = core.serializable_field("name", doc="Adapter name.")
+    filepath: Optional[str] = core.serializable_field(
         "filepath",
         str,
         doc=(
@@ -78,17 +78,15 @@ class PythonPlugin(core.SerializableObject):
         )
     )
 
-    def plugin_info_map(self) -> dict[str, str]:
+    def plugin_info_map(self) -> dict[str, Optional[str]]:
         """Returns a map with information about the plugin."""
 
-        result = collections.OrderedDict()
-
-        result['name'] = self.name
-        result['doc'] = inspect.getdoc(self.module())
-        result['path'] = self.module_abs_path()
-        result['from manifest'] = self._json_path
-
-        return result
+        return {
+            'name': self.name,
+            'doc': inspect.getdoc(self.module()),
+            'path': self.module_abs_path(),
+            'from manifest': self._json_path
+        }
 
     def module_abs_path(self) -> str:
         """Return an absolute path to the module implementing this adapter."""
