@@ -1,5 +1,5 @@
 .PHONY: coverage test test_first_fail clean autopep8 lint doc-html \
-	python-version wheel manifest lcov lcov-html lcov-reset stubgen mypy
+	python-version wheel manifest lcov lcov-html lcov-reset update-typestubs mypy
 
 # Special definition to handle Make from stripping newlines
 define newline
@@ -30,6 +30,7 @@ PYFLAKES_PROG := $(shell command -v pyflakes 2> /dev/null)
 FLAKE8_PROG := $(shell command -v flake8 2> /dev/null)
 CHECK_MANIFEST_PROG := $(shell command -v check-manifest 2> /dev/null)
 CLANG_FORMAT_PROG := $(shell command -v clang-format 2> /dev/null)
+PYBIND11_STUBGEN := $(shell command -v pybind11-stubgen 2> /dev/null)
 # AUTOPEP8_PROG := $(shell command -v autopep8 2> /dev/null)
 TEST_ARGS=
 
@@ -305,7 +306,12 @@ start-dev-new-minor-version: \
 	test-core
 	@echo "New version made.  Commit, push and open a PR!"
 
-stubgen:
+update-typestubs:
+ifndef PYBIND11_STUBGEN
+	$(error $(newline)$(ccred)pybind11-stubgen is not available on $$PATH please see:$(newline)$(ccend)\
+	$(ccblue)	https://pypi.org/project/pybind11-stubgen/#install$(newline)$(ccend)\
+	$(dev_deps_message))
+endif
 	$(eval TMP := $(shell mktemp -d))
 	pybind11-stubgen opentimelineio._otio opentimelineio._opentime -o $(TMP) --no-setup-py --root-module-suffix ''
 	for path in $$(find asd -name "*.pyi" -not -path "*/_testing/*"); do \

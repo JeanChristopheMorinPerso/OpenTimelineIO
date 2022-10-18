@@ -381,7 +381,8 @@ setup(
             'check-manifest',
             'flake8>=3.5',
             'coverage>=4.5',
-            'urllib3>=1.24.3'
+            'urllib3>=1.24.3',
+            'pybind11-stubgen'
         ],
         'view': [
             'PySide2~=5.11; platform.machine=="x86_64"',
