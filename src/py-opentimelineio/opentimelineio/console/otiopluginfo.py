@@ -8,13 +8,9 @@
 import argparse
 import fnmatch
 import textwrap
-import opentimelineio as otio
+import importlib.metadata
 
-# on some python interpreters, pkg_resources is not available
-try:
-    import pkg_resources
-except ImportError:
-    pkg_resources = None
+import opentimelineio as otio
 
 OTIO_PLUGIN_TYPES = ['all'] + otio.plugins.manifest.OTIO_PLUGIN_TYPES
 
@@ -183,16 +179,14 @@ def main():
     if args.version:
         print(f"OpenTimelineIO version: {otio.__version__}")
 
-        if pkg_resources:
-            pkg_resource_plugins = list(
-                pkg_resources.iter_entry_points("opentimelineio.plugins")
-            )
-            if pkg_resource_plugins:
-                print("Plugins from pkg_resources:")
-                for plugin in pkg_resource_plugins:
-                    print(f"   {plugin.dist}")
-            else:
-                print("No pkg_resource plugins installed.")
+
+        plugins = importlib.metadata.entry_points(group="opentimelineio.plugins")
+        if plugins:
+            print("Plugins from registered entry points:")
+            for plugin in plugins:
+                print(f"   {plugin.dist}")
+        else:
+            print("No entry point registered plugins installed.")
 
     # list the loaded manifests
     print("Manifests loaded:")

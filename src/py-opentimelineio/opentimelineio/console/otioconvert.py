@@ -6,14 +6,9 @@
 import argparse
 import sys
 import copy
+import importlib.metadata
 
 import opentimelineio as otio
-
-# on some python interpreters, pkg_resources is not available
-try:
-    import pkg_resources
-except ImportError:
-    pkg_resources = None
 
 __doc__ = """ Python wrapper around OTIO to convert timeline files between \
 formats.
@@ -157,16 +152,13 @@ def _parsed_args():
     if result.version:
         print(f"OpenTimelineIO version: {otio.__version__}")
 
-        if pkg_resources:
-            pkg_resource_plugins = list(
-                pkg_resources.iter_entry_points("opentimelineio.plugins")
-            )
-            if pkg_resource_plugins:
-                print("Plugins from pkg_resources:")
-                for plugin in pkg_resource_plugins:
-                    print(f"   {plugin.dist}")
-            else:
-                print("No pkg_resource plugins installed.")
+        plugins = importlib.metadata.entry_points(group="opentimelineio.plugins")
+        if plugins:
+            print("Plugins registered as entry points:")
+            for plugin in plugins:
+                print(f"   {plugin.dist}")
+        else:
+            print("No plugins registered as entry points installed.")
         parser.exit()
 
     if not result.input:

@@ -5,8 +5,8 @@
 
 import unittest
 import os
-import pkg_resources
 import sys
+import copy
 
 from unittest import mock
 
@@ -36,28 +36,15 @@ class TestSetuptoolsPlugin(unittest.TestCase):
         )
 
         # Create a WorkingSet as if the module were installed
-        entries = [mock_module_path] + pkg_resources.working_set.entries
+        entries = [mock_module_path] + sys.path
 
+        self.original_sysmodules = copy.copy(sys.modules)
         self.sys_patch = mock.patch('sys.path', entries)
         self.sys_patch.start()
 
-        working_set = pkg_resources.WorkingSet(entries)
-
-        # linker from the entry point
-        self.entry_patcher = mock.patch(
-            'pkg_resources.iter_entry_points',
-            working_set.iter_entry_points
-        )
-        self.entry_patcher.start()
-
     def tearDown(self):
         self.sys_patch.stop()
-        self.entry_patcher.stop()
-        if 'otio_mockplugin' in sys.modules:
-            del sys.modules['otio_mockplugin']
-
-        if 'otio_override_adapter' in sys.modules:
-            del sys.modules['otio_override_adapter']
+        sys.modules = self.original_sysmodules
 
     def test_detect_plugin(self):
         """This manifest uses the plugin_manifest function"""
@@ -102,7 +89,7 @@ class TestSetuptoolsPlugin(unittest.TestCase):
             )
         )
 
-    def test_pkg_resources_disabled(self):
+    def test_entrypoints_disabled(self):
         os.environ["OTIO_DISABLE_PKG_RESOURCE_PLUGINS"] = "1"
         import_reload(otio.plugins.manifest)
 

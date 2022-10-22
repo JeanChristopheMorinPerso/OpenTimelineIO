@@ -6,18 +6,8 @@
 import inspect
 import logging
 import os
-
-# In some circumstances pkg_resources has bad performance characteristics.
-# Using the envirionment variable: $OTIO_DISABLE_PKG_RESOURCE_PLUGINS disables
-# OpenTimelineIO's import and of use of the pkg_resources module.
-if os.environ.get("OTIO_DISABLE_PKG_RESOURCE_PLUGINS", False):
-    pkg_resources = None
-else:
-    try:
-        # on some python interpreters, pkg_resources is not available
-        import pkg_resources
-    except ImportError:
-        pkg_resources = None
+import importlib.metadata
+import importlib.resources
 
 from .. import (
     core,
@@ -250,11 +240,10 @@ def load_manifest():
 
             result.extend(manifest_from_file(json_path))
 
-    # setuptools.pkg_resources based plugins
-    if pkg_resources:
-        for plugin in pkg_resources.iter_entry_points(
-                "opentimelineio.plugins"
-        ):
+    # Entry point based plugins
+    if not os.environ.get('OTIO_DISABLE_PKG_RESOURCE_PLUGINS'):
+        entrypoints = importlib.metadata.entry_points(group="opentimelineio.plugins")
+        for plugin in entrypoints:
             plugin_name = plugin.name
             try:
                 plugin_entry_point = plugin.load()
@@ -276,33 +265,20 @@ def load_manifest():
                     plugin_manifest._update_plugin_source(manifest_path)
 
                 except AttributeError:
-                    if not pkg_resources.resource_exists(
-                            plugin.module_name,
-                            'plugin_manifest.json'
-                    ):
-                        raise
+                    name = plugin_entry_point.__name__
+                    filepath = importlib.resources.files(name) / "plugin_manifest.json"
 
-                    filepath = os.path.abspath(
-                        pkg_resources.resource_filename(
-                            plugin.module_name,
-                            'plugin_manifest.json'
-                        )
-                    )
-
-                    if filepath in result.source_files:
+                    if filepath.as_posix() in result.source_files:
                         continue
 
-                    manifest_stream = pkg_resources.resource_stream(
-                        plugin.module_name,
-                        'plugin_manifest.json'
-                    )
-                    plugin_manifest = core.deserialize_json_from_string(
-                        manifest_stream.read().decode('utf-8')
-                    )
-                    manifest_stream.close()
-
-                    plugin_manifest._update_plugin_source(filepath)
-                    plugin_manifest.source_files.append(filepath)
+                    try:
+                        plugin_manifest = core.deserialize_json_from_string(
+                            filepath.read_text()
+                        )
+                        plugin_manifest._update_plugin_source(filepath.as_posix())
+                        plugin_manifest.source_files.append(filepath.as_posix())
+                    except IOError:
+                        raise
 
             except Exception:
                 logging.exception(
@@ -312,31 +288,27 @@ def load_manifest():
 
             result.extend(plugin_manifest)
     else:
-        # XXX: Should we print some kind of warning that pkg_resources isn't
-        #        available?
+        # XXX: Should we print some kind of warning that entry points
+        #        plugins are disabled?
         pass
 
     # the builtin plugin manifest
-    builtin_manifest_path = os.path.join(
-        os.path.dirname(os.path.dirname(inspect.getsourcefile(core))),
-        "adapters",
+    adapters_path = importlib.resources.files("opentimelineio.adapters").joinpath(
         "builtin_adapters.plugin_manifest.json"
-    )
-    if os.path.abspath(builtin_manifest_path) not in result.source_files:
-        plugin_manifest = manifest_from_file(builtin_manifest_path)
+    ).as_posix()
+    if os.path.abspath(adapters_path) not in result.source_files:
+        plugin_manifest = manifest_from_file(adapters_path)
         result.extend(plugin_manifest)
 
     # the contrib plugin manifest (located in the opentimelineio_contrib package)
     try:
-        import opentimelineio_contrib as otio_c
+        contrib = "opentimelineio_contribs.adapters"
+        adapters_path = importlib.resources.files(contrib).joinpath(
+            "builtin_adapters.plugin_manifest.json"
+        ).as_posix()
 
-        contrib_manifest_path = os.path.join(
-            os.path.dirname(inspect.getsourcefile(otio_c)),
-            "adapters",
-            "contrib_adapters.plugin_manifest.json"
-        )
-        if os.path.abspath(contrib_manifest_path) not in result.source_files:
-            contrib_manifest = manifest_from_file(contrib_manifest_path)
+        if os.path.abspath(adapters_path) not in result.source_files:
+            contrib_manifest = manifest_from_file(adapters_path)
             result.extend(contrib_manifest)
 
     except ImportError:

@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright Contributors to the OpenTimelineIO project
 
-import pkg_resources
+import importlib.resources
 
 from opentimelineio.plugins import manifest
 
@@ -21,8 +21,8 @@ a non-standard json file path.
 
 def plugin_manifest():
     return manifest.manifest_from_string(
-        pkg_resources.resource_string(
-            __name__,
+        importlib.resources.read_text(
+            __package__,
             'unusually_named_plugin_manifest.json'
         )
     )
