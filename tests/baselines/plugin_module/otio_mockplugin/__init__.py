@@ -21,8 +21,7 @@ a non-standard json file path.
 
 def plugin_manifest():
     return manifest.manifest_from_string(
-        importlib.resources.read_text(
-            __package__,
+        importlib.resources.files(__package__).joinpath(
             'unusually_named_plugin_manifest.json'
-        )
+        ).read_text()
     )

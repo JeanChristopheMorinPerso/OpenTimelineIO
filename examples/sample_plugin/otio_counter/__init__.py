@@ -61,7 +61,8 @@ def plugin_manifest():
 
     # XXX: note, this doesn't get called.  For an example of this working,
     #      see the mockplugin unit test.
-
     return manifest.manifest_from_string(
-        importlib.resources.read_text(__package__, 'plugin_manifest.json')
+        importlib.resources.files(__package__).joinpath(
+            'plugin_manifest.json'
+        ).read_text()
     )
