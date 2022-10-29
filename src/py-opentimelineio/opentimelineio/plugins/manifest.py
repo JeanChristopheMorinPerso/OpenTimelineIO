@@ -6,9 +6,7 @@ from __future__ import annotations
 import inspect
 import logging
 import os
-from typing import TYPE_CHECKING, cast
-
-from opentimelineio.plugins.python_plugin import PythonPlugin
+from typing import TYPE_CHECKING, cast, Any
 
 # In some circumstances pkg_resources has bad performance characteristics.
 # Using the envirionment variable: $OTIO_DISABLE_PKG_RESOURCE_PLUGINS disables
@@ -33,6 +31,7 @@ if TYPE_CHECKING:
     from opentimelineio.schema import SchemaDef
     from ..hooks import HookScript
     from ..media_linker import MediaLinker
+    from opentimelineio.plugins.python_plugin import PythonPlugin
 
 
 # for tracking what kinds of plugins the manifest system supports
@@ -103,34 +102,34 @@ class Manifest(core.SerializableObject):
 
         self.version_manifests = {}
 
-    adapters: list[Adapter] = core.serializable_field(
+    adapters: core.Property[list['Adapter']] = core.serializable_typed_field(
         "adapters",
-        type([]),
+        list['Adapter'],
         "Adapters this manifest describes."
     )
-    schemadefs: list[SchemaDef] = core.serializable_field(
+    schemadefs: core.Property[list['SchemaDef']] = core.serializable_typed_field(
         "schemadefs",
-        type([]),
+        list['SchemaDef'],
         "Schemadefs this manifest describes."
     )
-    media_linkers: list[MediaLinker] = core.serializable_field(
+    media_linkers: core.Property[list['MediaLinker']] = core.serializable_typed_field(
         "media_linkers",
-        type([]),
+        list['MediaLinker'],
         "Media Linkers this manifest describes."
     )
-    hooks: dict[str, list[str]] = core.serializable_field(
+    hooks: core.Property[dict[str, list[str]]] = core.serializable_typed_field(
         "hooks",
-        type({}),
+        dict[str, list[str]],
         "Hooks that hooks scripts can be attached to."
     )
-    hook_scripts: list[HookScript] = core.serializable_field(
+    hook_scripts: core.Property[list['HookScript']] = core.serializable_typed_field(
         "hook_scripts",
-        type([]),
+        list['HookScript'],
         "Scripts that can be attached to hooks."
     )
-    version_manifests = core.serializable_field(
+    version_manifests = core.serializable_typed_field(
         "version_manifests",
-        type({}),
+        dict[str, Any],
         "Sets of versions to downgrade schemas to."
     )
 

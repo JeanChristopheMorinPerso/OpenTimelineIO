@@ -3,11 +3,9 @@
 
 """Core implementation details and wrappers around the C++ library"""
 import functools
-from typing import Type, Any, Dict, Optional, Callable, TypeVar, cast
+from typing import Type, Dict, Optional, Callable, TypeVar, Generic, Any
+import types
 
-from typing_extensions import ParamSpec, Concatenate, reveal_type
-
-import _otio
 
 from .. _otio import ( # noqa
     # errors
@@ -36,6 +34,8 @@ from .. _otio import ( # noqa
     _serialize_json_to_file,
     type_version_map,
     release_to_schema_version_map,
+
+    AnyDictionary
 )
 
 from . _core_utils import ( # noqa
@@ -50,6 +50,7 @@ from . import ( # noqa
     composable,
     item,
 )
+
 
 __all__ = [
     'Composable',
@@ -163,11 +164,7 @@ def register_type(classobj: Type[SerializableObject], schemaname: Optional[str]=
     return classobj
 
 
-P = ParamSpec('P')
-R = TypeVar('R')
-
-
-def upgrade_function_for(cls: Type[SerializableObject], version_to_upgrade_to: int) -> Callable[P, R]:
+def upgrade_function_for(cls: Type[SerializableObject], version_to_upgrade_to: int):
     """
     Decorator for identifying schema class upgrade functions.
 
@@ -193,12 +190,11 @@ def upgrade_function_for(cls: Type[SerializableObject], version_to_upgrade_to: i
     :param version_to_upgrade_to: the version to upgrade to
     """
 
-    def decorator_func(func: Callable[Concatenate[_otio.AnyDictionary, P], R]) -> Callable[P, R]:
+    def decorator_func(func):
         @functools.wraps(func)
-        def wrapped_update(*args: P.args, **kwargs: P.kwargs) -> R:
-            modified = func(*args)
-            args[0].clear()
-            args[0].update(modified)
+        def wrapped_update(data):
+            modified = func(data)
+            data.update(modified)
 
         register_upgrade_function(
             cls._serializable_label.split(".")[0],
@@ -206,42 +202,9 @@ def upgrade_function_for(cls: Type[SerializableObject], version_to_upgrade_to: i
             wrapped_update
         )
 
-        return cast(Callable[P, R], func)
-
-    return cast(Callable[P, R], decorator_func)
-
-
-def upgrade_function_for_2(cls: Type[SerializableObject], version_to_upgrade_to: int) -> Callable[[Callable[[dict], None]], Callable[[dict], None]]:
-    def decorator_func(func: Callable[[dict], None]) -> Callable[[dict], None]:
-        @functools.wraps(func)
-        def wrapped_update(data: _otio.AnyDictionary) -> None:
-            modified = func(data)
-            data.clear()
-            data.update(modified)
-
-        register_upgrade_function(
-            cls._serializable_label.split(".")[0],
-            version_to_upgrade_to,
-            cast(Callable[[_otio.AnyDictionary], None], wrapped_update)
-        )
-
-        reveal_type(func)
         return func
 
-    reveal_type(decorator_func)
-    return cast(Callable[[dict], None], decorator_func)
-
-
-# @upgrade_function_for(Composable, 1)
-# def asd(data: _otio.AnyDictionary):
-#     pass
-
-
-@upgrade_function_for_2(Composable, 1)
-def asd2(data: int):
-    pass
-
-asd2(1)
+    return decorator_func
 
 
 def downgrade_function_from(cls: Type[SerializableObject], version_to_downgrade_from: int):
@@ -326,7 +289,7 @@ def serializable_field(name: str, required_type: Type[Any]=None, doc: str=None) 
 
     def setter(self, val):
         # always allow None values regardless of value of required_type
-        if required_type is not None and val is not None:
+        if required_type is not None and val is not None and not isinstance(required_type, types.GenericAlias):
             if not isinstance(val, required_type):
                 raise TypeError(
                     "attribute '{}' must be an instance of '{}', not: {}".format(
@@ -339,6 +302,83 @@ def serializable_field(name: str, required_type: Type[Any]=None, doc: str=None) 
         self._dynamic_fields[name] = val
 
     return property(getter, setter, doc=doc)
+
+
+_T1 = TypeVar("_T1")
+
+
+# Taken from https://github.com/python/mypy/issues/8440#issuecomment-592660739
+class Property(property, Generic[_T1]):
+    """Generic implementation of a property.
+
+    Allows us to provide type annotations on top of builtin properties.
+    """
+
+    def __init__(
+            self,
+            fget: Optional[Callable[[Any], _T1]] = None,
+            fset: Optional[Callable[[Any, _T1], None]] = None,
+            fdel: Optional[Callable[[Any], None]] = None,
+            doc: Optional[str] = None,
+    ) -> None:
+        super().__init__(fget, fset, fdel, doc)
+
+    def __get__(self, obj: Any, objtype=None) -> _T1:
+        return super().__get__(obj, objtype)
+
+    def __set__(self, obj: Any, value: _T1) -> None:
+        super().__set__(obj, value)
+
+    def __delete__(self, obj: Any) -> None:
+        super().__delete__(obj)
+
+
+_T2 = TypeVar("_T2")
+
+
+def serializable_typed_field(name: str, required_type: Type[_T2], doc: str=None) -> Property[_T2]:
+    """
+    Convenience function for adding attributes to child classes of
+    :class:`~SerializableObject` in such a way that they will be serialized/deserialized
+    automatically.
+
+    Use it like this:
+
+    .. code-block:: python
+
+        @core.register_type
+        class Foo(SerializableObject):
+            bar = serializable_field("bar", required_type=int, doc="example")
+
+    This would indicate that class "foo" has a serializable field "bar".  So:
+
+    .. code-block:: python
+
+        f = foo()
+        f.bar = "stuff"
+
+        # serialize & deserialize
+        otio_json = otio.adapters.from_name("otio")
+        f2 = otio_json.read_from_string(otio_json.write_to_string(f))
+
+        # fields should be equal
+        f.bar == f2.bar
+
+    Additionally, the "doc" field will become the documentation for the
+    property.
+
+    :param name: name of the field to add
+    :param required_type: type required for the field
+    :param doc: field documentation
+    """
+
+    def getter(self) -> _T2:
+        return self._dynamic_fields[name]
+
+    def setter(self, val: _T2):
+        self._dynamic_fields[name] = val
+
+    return Property(getter, setter, doc=doc)
 
 
 def deprecated_field() -> property:
