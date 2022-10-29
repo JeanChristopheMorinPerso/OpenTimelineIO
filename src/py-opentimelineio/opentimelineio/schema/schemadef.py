@@ -18,10 +18,10 @@ class SchemaDef(plugins.PythonPlugin):
 
     def __init__(
         self,
-        name=None,
-        filepath=None,
+        name: str,
+        filepath: str,
     ):
-        plugins.PythonPlugin.__init__(self, name, filepath)
+        super().__init__(name, filepath)
 
     def module(self):
         """

@@ -247,63 +247,6 @@ def downgrade_function_from(cls: Type[SerializableObject], version_to_downgrade_
 
     return decorator_func
 
-
-def serializable_field(name: str, required_type: Type[Any]=None, doc: str=None) -> property:
-    """
-    Convenience function for adding attributes to child classes of
-    :class:`~SerializableObject` in such a way that they will be serialized/deserialized
-    automatically.
-
-    Use it like this:
-
-    .. code-block:: python
-
-        @core.register_type
-        class Foo(SerializableObject):
-            bar = serializable_field("bar", required_type=int, doc="example")
-
-    This would indicate that class "foo" has a serializable field "bar".  So:
-
-    .. code-block:: python
-
-        f = foo()
-        f.bar = "stuff"
-
-        # serialize & deserialize
-        otio_json = otio.adapters.from_name("otio")
-        f2 = otio_json.read_from_string(otio_json.write_to_string(f))
-
-        # fields should be equal
-        f.bar == f2.bar
-
-    Additionally, the "doc" field will become the documentation for the
-    property.
-
-    :param name: name of the field to add
-    :param required_type: type required for the field
-    :param doc: field documentation
-    """
-
-    def getter(self):
-        return self._dynamic_fields[name]
-
-    def setter(self, val):
-        # always allow None values regardless of value of required_type
-        if required_type is not None and val is not None and not isinstance(required_type, types.GenericAlias):
-            if not isinstance(val, required_type):
-                raise TypeError(
-                    "attribute '{}' must be an instance of '{}', not: {}".format(
-                        name,
-                        required_type,
-                        type(val)
-                    )
-                )
-
-        self._dynamic_fields[name] = val
-
-    return property(getter, setter, doc=doc)
-
-
 _T1 = TypeVar("_T1")
 
 
@@ -313,7 +256,6 @@ class Property(property, Generic[_T1]):
 
     Allows us to provide type annotations on top of builtin properties.
     """
-
     def __init__(
             self,
             fget: Optional[Callable[[Any], _T1]] = None,
@@ -333,10 +275,7 @@ class Property(property, Generic[_T1]):
         super().__delete__(obj)
 
 
-_T2 = TypeVar("_T2")
-
-
-def serializable_typed_field(name: str, required_type: Type[_T2], doc: str=None) -> Property[_T2]:
+def serializable_field(name: str, required_type: Type[_T1]=None, doc: str=None) -> Property[_T1]:
     """
     Convenience function for adding attributes to child classes of
     :class:`~SerializableObject` in such a way that they will be serialized/deserialized
@@ -372,10 +311,21 @@ def serializable_typed_field(name: str, required_type: Type[_T2], doc: str=None)
     :param doc: field documentation
     """
 
-    def getter(self) -> _T2:
+    def getter(self) -> _T1:
         return self._dynamic_fields[name]
 
-    def setter(self, val: _T2):
+    def setter(self, val: _T1):
+        # always allow None values regardless of value of required_type
+        if required_type is not None and val is not None and not isinstance(required_type, types.GenericAlias):
+            if not isinstance(val, required_type):
+                raise TypeError(
+                    "attribute '{}' must be an instance of '{}', not: {}".format(
+                        name,
+                        required_type,
+                        type(val)
+                    )
+                )
+
         self._dynamic_fields[name] = val
 
     return Property(getter, setter, doc=doc)

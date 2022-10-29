@@ -48,21 +48,17 @@ class Adapter(plugins.PythonPlugin):
 
     def __init__(
         self,
-        name: str=None,
-        filepath: str=None,
+        name: str,
+        filepath: str,
         suffixes: List[str]=None
     ):
-        plugins.PythonPlugin.__init__(
-            self,
-            name,
-            filepath
-        )
+        super().__init__(name, filepath)
 
         self.suffixes = suffixes or []
 
-    suffixes: List[str] = core.serializable_field(
+    suffixes = core.serializable_field(
         "suffixes",
-        type([]),
+        List[str],
         doc="File suffixes associated with this adapter."
     )
 

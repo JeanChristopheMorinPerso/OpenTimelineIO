@@ -6,7 +6,6 @@ from __future__ import annotations
 import os
 import imp
 import inspect
-import collections
 import copy
 from typing import TYPE_CHECKING, Optional, Union, Any
 
@@ -59,17 +58,17 @@ class PythonPlugin(core.SerializableObject):
 
     def __init__(
         self,
-        name: Optional[str]=None,
-        filepath: Optional[str]=None,
+        name: str,
+        filepath: str,
     ):
         super().__init__()
         self.name = name
         self.filepath = filepath
-        self._json_path: str = None
-        self._module: 'ModuleType' = None
+        self._json_path: Optional[str] = None
+        self._module: Optional['ModuleType'] = None
 
-    name: Optional[str] = core.serializable_field("name", doc="Adapter name.")
-    filepath: Optional[str] = core.serializable_field(
+    name = core.serializable_field("name", required_type=str, doc="Adapter name.")
+    filepath = core.serializable_field(
         "filepath",
         str,
         doc=(
@@ -78,7 +77,7 @@ class PythonPlugin(core.SerializableObject):
         )
     )
 
-    def plugin_info_map(self) -> dict[str, Optional[str]]:
+    def plugin_info_map(self) -> dict[str, Optional[Any]]:
         """Returns a map with information about the plugin."""
 
         return {
@@ -92,7 +91,7 @@ class PythonPlugin(core.SerializableObject):
         """Return an absolute path to the module implementing this adapter."""
 
         filepath = self.filepath
-        if not os.path.isabs(filepath):
+        if filepath and not os.path.isabs(filepath):
             if not self._json_path:
                 raise exceptions.MisconfiguredPluginError(
                     "{} plugin is misconfigured, missing json path. "

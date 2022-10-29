@@ -90,7 +90,7 @@ class Manifest(core.SerializableObject):
     _serializable_label = "PluginManifest.1"
 
     def __init__(self):
-        core.SerializableObject.__init__(self)
+        super().__init__()
         self.adapters = []
         self.schemadefs = []
         self.media_linkers = []
@@ -102,32 +102,32 @@ class Manifest(core.SerializableObject):
 
         self.version_manifests = {}
 
-    adapters: core.Property[list['Adapter']] = core.serializable_typed_field(
+    adapters = core.serializable_field(
         "adapters",
         list['Adapter'],
         "Adapters this manifest describes."
     )
-    schemadefs: core.Property[list['SchemaDef']] = core.serializable_typed_field(
+    schemadefs = core.serializable_field(
         "schemadefs",
         list['SchemaDef'],
         "Schemadefs this manifest describes."
     )
-    media_linkers: core.Property[list['MediaLinker']] = core.serializable_typed_field(
+    media_linkers = core.serializable_field(
         "media_linkers",
         list['MediaLinker'],
         "Media Linkers this manifest describes."
     )
-    hooks: core.Property[dict[str, list[str]]] = core.serializable_typed_field(
+    hooks = core.serializable_field(
         "hooks",
         dict[str, list[str]],
         "Hooks that hooks scripts can be attached to."
     )
-    hook_scripts: core.Property[list['HookScript']] = core.serializable_typed_field(
+    hook_scripts = core.serializable_field(
         "hook_scripts",
         list['HookScript'],
         "Scripts that can be attached to hooks."
     )
-    version_manifests = core.serializable_typed_field(
+    version_manifests = core.serializable_field(
         "version_manifests",
         dict[str, Any],
         "Sets of versions to downgrade schemas to."

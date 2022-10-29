@@ -5,6 +5,9 @@ from .. core._core_utils import add_method
 from .. import _otio
 
 
+TrackKind = _otio.Track.Kind
+
+
 @add_method(_otio.Track)
 def each_clip(self, search_range=None, shallow_search=False):
     """Generator that returns each clip contained in the track

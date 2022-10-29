@@ -51,7 +51,6 @@ from . import (
     v2d,
 )
 
-track.TrackKind = TrackKind
 
 def timeline_from_clips(clips):
     """Convenience for making a single track timeline from a list of clips."""

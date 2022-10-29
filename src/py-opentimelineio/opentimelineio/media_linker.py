@@ -19,7 +19,7 @@ track if metadata is stored there.
 from __future__ import annotations
 import os
 import inspect
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast, Optional, Union, Any
 
 from . import (
     exceptions,
@@ -29,7 +29,7 @@ from . import (
 
 if TYPE_CHECKING:
     from .schema import Clip
-    from typing import Optional
+    from .core import MediaReference
 
 
 class MediaLinkingPolicy:
@@ -45,7 +45,7 @@ def available_media_linker_names() -> list[str]:
     return [str(adp.name) for adp in plugins.ActiveManifest().media_linkers]
 
 
-def from_name(name: str) -> 'Optional[MediaLinker]':
+def from_name(name: str) -> Optional['MediaLinker']:
     """Fetch the media linker object by the name of the adapter directly."""
 
     if name == MediaLinkingPolicy.ForceDefaultLinker or not name:
@@ -57,10 +57,10 @@ def from_name(name: str) -> 'Optional[MediaLinker]':
     manifest = plugins.ActiveManifest()
     # @TODO: make this handle the enums
     try:
-        return manifest.from_name(
+        return cast('MediaLinker', manifest.from_name(
             name,
             kind_list="media_linkers"
-        )
+        ))
     except exceptions.NotSupportedError:
         raise exceptions.NotSupportedError(
             "media linker not supported: {}, available: {}".format(
@@ -80,10 +80,10 @@ def default_media_linker() -> str:
 
 
 def linked_media_reference(
-    target_clip: Clip,
+    target_clip: 'Clip',
     media_linker_name: str=MediaLinkingPolicy.ForceDefaultLinker,
-    media_linker_argument_map=None
-):
+    media_linker_argument_map: Optional[dict[str, Any]]=None
+) -> Union['Clip', 'MediaReference']:
     media_linker = from_name(media_linker_name)
 
     if not media_linker:
@@ -106,31 +106,31 @@ class MediaLinker(plugins.PythonPlugin):
 
     def __init__(
         self,
-        name: str=None,
-        filepath: str=None,
+        name: str,
+        filepath: str,
     ):
         super().__init__(name, filepath)
 
-    def link_media_reference(self, in_clip: Clip, media_linker_argument_map: dict=None):
+    def link_media_reference(self, in_clip: Clip, media_linker_argument_map: dict[str, Any]=None) -> 'MediaReference':
         media_linker_argument_map = media_linker_argument_map or {}
 
         return self._execute_function(
             "link_media_reference",
             in_clip=in_clip,
-            media_linker_argument_map=media_linker_argument_map
+            media_linker_argument_map=media_linker_argument_map or {}
         )
 
     def is_default_linker(self) -> bool:
         return os.environ.get("OTIO_DEFAULT_MEDIA_LINKER", "") == self.name
 
-    def plugin_info_map(self) -> dict[str, Optional[str]]:
+    def plugin_info_map(self) -> dict[str, Optional[Any]]:
         """Adds extra adapter-specific information to call to the parent fn."""
 
         result = super().plugin_info_map()
 
         fn_doc = inspect.getdoc(self.module().link_media_reference)
         if fn_doc:
-            mod_doc = [result['doc'], ""]
+            mod_doc = [result['doc'] or "", ""]
             mod_doc.append(fn_doc)
             result["doc"] = "\n".join(mod_doc)
 

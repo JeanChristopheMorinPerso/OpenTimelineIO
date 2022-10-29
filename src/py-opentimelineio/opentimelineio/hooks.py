@@ -2,7 +2,7 @@
 # Copyright Contributors to the OpenTimelineIO project
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast, Any
 
 from . import (
     plugins,
@@ -88,14 +88,14 @@ class HookScript(plugins.PythonPlugin):
 
     def __init__(
         self,
-        name: str=None,
-        filepath: str=None,
+        name: str,
+        filepath: str,
     ):
         """HookScript plugin constructor."""
 
         super().__init__(name, filepath)
 
-    def run(self, in_timeline: 'Timeline', argument_map={}):
+    def run(self, in_timeline: 'Timeline', argument_map: dict[str, Any]=None) -> 'Timeline':
         """Run the hook_function associated with this plugin."""
 
         # @TODO: should in_timeline be passed in place?  or should a copy be
@@ -103,7 +103,7 @@ class HookScript(plugins.PythonPlugin):
         return self._execute_function(
             "hook_function",
             in_timeline=in_timeline,
-            argument_map=argument_map
+            argument_map=argument_map or {}
         )
 
     def __str__(self):
@@ -152,7 +152,7 @@ def scripts_attached_to(hook: str) -> list[str]:
     return plugins.ActiveManifest().hooks[hook]
 
 
-def run(hook: str, tl: Timeline, extra_args=None):
+def run(hook: str, tl: 'Timeline', extra_args: dict[str, Any]=None):
     """Run all the scripts associated with hook, passing in tl and extra_args.
 
     Will return the return value of the last hook script.
@@ -162,6 +162,6 @@ def run(hook: str, tl: Timeline, extra_args=None):
 
     hook_scripts = plugins.ActiveManifest().hooks[hook]
     for name in hook_scripts:
-        hs = plugins.ActiveManifest().from_name(name, "hook_scripts")
-        tl = hs.run(tl, extra_args)
+        hs = cast(HookScript, plugins.ActiveManifest().from_name(name, "hook_scripts"))
+        tl = hs.run(tl, extra_args or {})
     return tl
