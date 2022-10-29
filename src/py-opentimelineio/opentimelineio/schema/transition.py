@@ -6,7 +6,7 @@ from .. import _otio
 
 
 @add_method(_otio.Transition)
-def __str__(self):
+def __str__(self: _otio.Transition) -> str:
     return 'Transition("{}", "{}", {}, {}, {})'.format(
         self.name,
         self.transition_type,
@@ -17,7 +17,7 @@ def __str__(self):
 
 
 @add_method(_otio.Transition)
-def __repr__(self):
+def __repr__(self: _otio.Transition) -> str:
     return (
         'otio.schema.Transition('
         'name={}, '

@@ -6,12 +6,12 @@ from .. import _otio
 
 
 @add_method(_otio.ExternalReference)
-def __str__(self):
+def __str__(self: _otio.ExternalReference) -> str:
     return f'ExternalReference("{str(self.target_url)}")'
 
 
 @add_method(_otio.ExternalReference)
-def __repr__(self):
+def __repr__(self: _otio.ExternalReference) -> str:
     return 'otio.schema.ExternalReference(target_url={})'.format(
         repr(str(self.target_url))
     )

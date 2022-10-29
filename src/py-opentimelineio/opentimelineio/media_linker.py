@@ -111,14 +111,14 @@ class MediaLinker(plugins.PythonPlugin):
     ):
         super().__init__(name, filepath)
 
-    def link_media_reference(self, in_clip: Clip, media_linker_argument_map: dict[str, Any]=None) -> 'MediaReference':
+    def link_media_reference(self, in_clip: Clip, media_linker_argument_map: Optional[dict[str, Any]]=None) -> 'MediaReference':
         media_linker_argument_map = media_linker_argument_map or {}
 
-        return self._execute_function(
+        return cast('MediaReference', self._execute_function(
             "link_media_reference",
             in_clip=in_clip,
             media_linker_argument_map=media_linker_argument_map or {}
-        )
+        ))
 
     def is_default_linker(self) -> bool:
         return os.environ.get("OTIO_DEFAULT_MEDIA_LINKER", "") == self.name
@@ -139,13 +139,13 @@ class MediaLinker(plugins.PythonPlugin):
 
         return result
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "MediaLinker({}, {})".format(
             repr(self.name),
             repr(self.filepath)
         )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             "otio.media_linker.MediaLinker("
             "name={}, "

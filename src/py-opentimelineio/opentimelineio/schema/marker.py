@@ -6,7 +6,7 @@ from .. import _otio
 
 
 @add_method(_otio.Marker)
-def __str__(self):
+def __str__(self: _otio.Marker) -> str:
     return "Marker({}, {}, {})".format(
         str(self.name),
         str(self.marked_range),
@@ -15,7 +15,7 @@ def __str__(self):
 
 
 @add_method(_otio.Marker)
-def __repr__(self):
+def __repr__(self: _otio.Marker) -> str:
     return (
         "otio.schema.Marker("
         "name={}, "

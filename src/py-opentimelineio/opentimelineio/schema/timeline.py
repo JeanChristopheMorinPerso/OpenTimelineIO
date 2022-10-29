@@ -6,12 +6,12 @@ from .. import _otio
 
 
 @add_method(_otio.Timeline)
-def __str__(self):
+def __str__(self: _otio.Timeline) -> str:
     return f'Timeline("{str(self.name)}", {str(self.tracks)})'
 
 
 @add_method(_otio.Timeline)
-def __repr__(self):
+def __repr__(self: _otio.Timeline) -> str:
     return (
         "otio.schema.Timeline(name={}, tracks={})".format(
             repr(self.name),

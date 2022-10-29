@@ -6,7 +6,7 @@ from .. import _otio
 
 
 @add_method(_otio.Effect)
-def __str__(self):
+def __str__(self: _otio.Effect) -> str:
     return (
         "Effect("
         "{}, "
@@ -21,7 +21,7 @@ def __str__(self):
 
 
 @add_method(_otio.Effect)
-def __repr__(self):
+def __repr__(self: _otio.Effect) -> str:
     return (
         "otio.schema.Effect("
         "name={}, "

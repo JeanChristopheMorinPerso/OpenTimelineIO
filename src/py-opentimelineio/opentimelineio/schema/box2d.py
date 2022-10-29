@@ -6,7 +6,7 @@ from .. import _otio
 
 
 @add_method(_otio.Box2d)
-def __str__(self):
+def __str__(self: _otio.Box2d) -> str:
     return 'Box2d({}, {})'.format(
         self.min,
         self.max
@@ -14,7 +14,7 @@ def __str__(self):
 
 
 @add_method(_otio.Box2d)
-def __repr__(self):
+def __repr__(self: _otio.Box2d) -> str:
     return (
         'otio.schema.Box2d('
         'min={}, '

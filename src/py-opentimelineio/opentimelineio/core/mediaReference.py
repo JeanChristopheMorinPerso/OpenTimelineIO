@@ -6,7 +6,7 @@ from .. import _otio
 
 
 @add_method(_otio.MediaReference)
-def __str__(self):
+def __str__(self: _otio.MediaReference) -> str:
     return "{}({}, {}, {}, {})".format(
         self.__class__.__name__,
         repr(self.name),
@@ -17,7 +17,7 @@ def __str__(self):
 
 
 @add_method(_otio.MediaReference)
-def __repr__(self):
+def __repr__(self: _otio.MediaReference) -> str:
     return (
         "otio.{}.{}("
         "name={},"

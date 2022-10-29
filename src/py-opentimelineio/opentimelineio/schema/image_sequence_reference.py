@@ -6,7 +6,7 @@ from .. import _otio
 
 
 @add_method(_otio.ImageSequenceReference)
-def __str__(self):
+def __str__(self: _otio.ImageSequenceReference) -> str:
     return (
         'ImageSequenceReference('
         '"{}", "{}", "{}", {}, {}, {}, {}, {}, {}, {}, {})' .format(
@@ -26,7 +26,7 @@ def __str__(self):
 
 
 @add_method(_otio.ImageSequenceReference)
-def __repr__(self):
+def __repr__(self: _otio.ImageSequenceReference) -> str:
     return (
         'ImageSequenceReference('
         'target_url_base={}, '

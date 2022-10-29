@@ -132,7 +132,7 @@ class PythonPlugin(core.SerializableObject):
 
         return self._module
 
-    def _execute_function(self, func_name: str, **kwargs) -> 'Any':
+    def _execute_function(self, func_name: str, **kwargs) -> Any:
         """Execute func_name on this adapter with error checking."""
 
         # collects the error handling into a common place.

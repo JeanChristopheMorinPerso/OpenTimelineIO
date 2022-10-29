@@ -6,7 +6,7 @@ from .. import _otio
 
 
 @add_method(_otio.Composable)
-def __repr__(self):
+def __repr__(self: _otio.Composable) -> str:
     return (
         "otio.{}("
         "name={}, "
@@ -20,7 +20,7 @@ def __repr__(self):
 
 
 @add_method(_otio.Composable)
-def __str__(self):
+def __str__(self: _otio.Composable) -> str:
     return "{}({}, {})".format(
         "Composable",
         str(self.name),

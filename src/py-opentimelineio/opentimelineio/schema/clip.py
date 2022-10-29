@@ -6,7 +6,7 @@ from .. import _otio
 
 
 @add_method(_otio.Clip)
-def __str__(self):
+def __str__(self: _otio.Clip) -> str:
     return 'Clip("{}", {}, {}, {})'.format(
         self.name,
         self.media_reference,
@@ -16,7 +16,7 @@ def __str__(self):
 
 
 @add_method(_otio.Clip)
-def __repr__(self):
+def __repr__(self: _otio.Clip) -> str:
     return (
         'otio.schema.Clip('
         'name={}, '

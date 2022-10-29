@@ -4,6 +4,7 @@
 import types
 import collections.abc
 import copy
+from typing import Any, Callable, Type, ParamSpec, Optional
 
 from .. import (
     _otio,
@@ -14,8 +15,6 @@ from .. _otio import (
     AnyVector,
     PyAny
 )
-
-from typing import Any
 
 SUPPORTED_VALUE_TYPES = (
     "int",
@@ -39,7 +38,7 @@ def _is_nonstring_sequence(v: Any):
     return isinstance(v, collections.abc.Sequence) and not _is_str(v)
 
 
-def _value_to_any(value, ids=None):
+def _value_to_any(value: Any, ids: Optional[set[int]]=None) -> PyAny:
     if isinstance(value, PyAny):
         return value
 
@@ -355,7 +354,7 @@ _add_mutable_sequence_methods(_otio.Composition, side_effecting_insertions=True)
 _add_mutable_sequence_methods(_otio.SerializableCollection)
 
 
-def __setattr__(self, key, value):
+def __setattr__(self, key: Any, value: Any) -> None:
     super(SerializableObject, self).__setattr__(key, value)
     _otio.install_external_keepalive_monitor(self, True)
 
@@ -364,22 +363,25 @@ SerializableObject.__setattr__ = __setattr__
 
 
 # Decorator that adds a function into a class.
-def add_method(cls):
-    def decorator(func):
+def add_method(cls: Type[Any]) -> Callable[[Any], None]:
+    def decorator(func: Callable[[Any], Any]) -> None:
         setattr(cls, func.__name__, func)
     return decorator
 
 
+P = ParamSpec('P')
+
+
 @add_method(SerializableObject)
-def deepcopy(self, *args, **kwargs):
+def deepcopy(self: SerializableObject, *args: P.args, **kwargs: P.kwargs) -> SerializableObject:
     return self.clone()
 
 
 @add_method(SerializableObject)
-def __deepcopy__(self, *args, **kwargs):
+def __deepcopy__(self: SerializableObject, *args: P.args, **kwargs: P.kwargs) -> SerializableObject:
     return self.clone()
 
 
 @add_method(SerializableObject)
-def __copy__(self, *args, **kwargs):
+def __copy__(self: SerializableObject, *args: P.args, **kwargs: P.kwargs) -> SerializableObject:
     raise ValueError("SerializableObjects may not be shallow copied.")

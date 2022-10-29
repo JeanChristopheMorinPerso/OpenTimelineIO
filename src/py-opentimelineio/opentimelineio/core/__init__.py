@@ -131,7 +131,10 @@ def serialize_json_to_file(
     )
 
 
-def register_type(classobj: Type[SerializableObject], schemaname: Optional[str]=None):
+_T2 = TypeVar("_T2", bound=Type[SerializableObject])
+
+
+def register_type(classobj: _T2, schemaname: Optional[str]=None) -> _T2:
     """Decorator for registering a SerializableObject type
 
     Example:
@@ -246,6 +249,7 @@ def downgrade_function_from(cls: Type[SerializableObject], version_to_downgrade_
         return func
 
     return decorator_func
+
 
 _T1 = TypeVar("_T1")
 

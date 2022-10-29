@@ -3,6 +3,8 @@
 
 import inspect
 import collections
+from types import ModuleType
+from typing import Any, cast, Optional
 
 from .. import (
     core,
@@ -23,7 +25,7 @@ class SchemaDef(plugins.PythonPlugin):
     ):
         super().__init__(name, filepath)
 
-    def module(self):
+    def module(self) -> ModuleType:
         """
         Return the module object for this schemadef plugin.
         If the module hasn't already been imported, it is imported and
@@ -39,7 +41,7 @@ class SchemaDef(plugins.PythonPlugin):
 
         return self._module
 
-    def plugin_info_map(self):
+    def plugin_info_map(self) -> dict[str, Optional[Any]]:
         """Adds extra schemadef-specific information to call to the parent fn.
         """
 
@@ -64,13 +66,13 @@ class SchemaDef(plugins.PythonPlugin):
         result["SchemaDefs"] = features
         return result
 
-    def __str__(self):
+    def __str__(self: 'SchemaDef') -> str:
         return "SchemaDef({}, {})".format(
             repr(self.name),
             repr(self.filepath)
         )
 
-    def __repr__(self):
+    def __repr__(self: 'SchemaDef') -> str:
         return (
             "otio.schema.SchemaDef("
             "name={}, "
@@ -82,17 +84,17 @@ class SchemaDef(plugins.PythonPlugin):
         )
 
 
-def available_schemadef_names():
+def available_schemadef_names() -> list[str]:
     """Return a string list of the available schemadefs."""
 
     return [str(sd.name) for sd in plugins.ActiveManifest().schemadefs]
 
 
-def from_name(name):
+def from_name(name: str) -> SchemaDef:
     """Fetch the schemadef plugin object by the name of the schema directly."""
 
     try:
-        return plugins.ActiveManifest().from_name(name, kind_list="schemadefs")
+        return cast(SchemaDef, plugins.ActiveManifest().from_name(name, kind_list="schemadefs"))
     except exceptions.NotSupportedError:
         raise exceptions.NotSupportedError(
             "schemadef not supported: {}, available: {}".format(
@@ -102,7 +104,7 @@ def from_name(name):
         )
 
 
-def module_from_name(name):
+def module_from_name(name: str) -> ModuleType:
     """Fetch the plugin's module by the name of the schemadef.
 
     Will load the plugin if it has not already been loaded.  Reading a file that

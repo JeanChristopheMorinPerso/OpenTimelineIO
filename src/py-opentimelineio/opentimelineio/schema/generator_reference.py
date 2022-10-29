@@ -6,7 +6,7 @@ from .. import _otio
 
 
 @add_method(_otio.GeneratorReference)
-def __str__(self):
+def __str__(self: _otio.GeneratorReference) -> str:
     return 'GeneratorReference("{}", "{}", {}, {}, {})'.format(
         self.name,
         self.generator_kind,
@@ -17,7 +17,7 @@ def __str__(self):
 
 
 @add_method(_otio.GeneratorReference)
-def __repr__(self):
+def __repr__(self: _otio.GeneratorReference) -> str:
     return (
         'otio.schema.GeneratorReference('
         'name={}, '

@@ -6,7 +6,7 @@ from .. import _otio
 
 
 @add_method(_otio.SerializableCollection)
-def __str__(self):
+def __str__(self: _otio.SerializableCollection) -> str:
     return "SerializableCollection({}, {}, {})".format(
         str(self.name),
         str(list(self)),
@@ -15,7 +15,7 @@ def __str__(self):
 
 
 @add_method(_otio.SerializableCollection)
-def __repr__(self):
+def __repr__(self: _otio.SerializableCollection) -> str:
     return (
         "otio.{}("
         "name={}, "

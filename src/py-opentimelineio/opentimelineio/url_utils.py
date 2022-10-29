@@ -36,7 +36,7 @@ def url_from_filepath(fpath: str) -> str:
         )
 
 
-def filepath_from_url(urlstr: str):
+def filepath_from_url(urlstr: str) -> str:
     """ Take a url and return a filepath """
 
     parsed_result = urlparse.urlparse(urlstr)

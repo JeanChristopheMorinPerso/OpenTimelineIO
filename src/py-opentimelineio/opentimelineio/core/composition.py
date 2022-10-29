@@ -1,12 +1,13 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright Contributors to the OpenTimelineIO project
+from typing import Generator, Type, Any
 
 from . _core_utils import add_method
-from .. import _otio
+from .. import _otio, opentime
 
 
 @add_method(_otio.Composition)
-def __str__(self):
+def __str__(self: _otio.Composition) -> str:
     return "{}({}, {}, {}, {})".format(
         self.__class__.__name__,
         str(self.name),
@@ -17,7 +18,7 @@ def __str__(self):
 
 
 @add_method(_otio.Composition)
-def __repr__(self):
+def __repr__(self: _otio.Composition) -> str:
     return (
         "otio.{}.{}("
         "name={}, "
@@ -37,11 +38,11 @@ def __repr__(self):
 
 @add_method(_otio.Composition)
 def each_child(
-        self,
-        search_range=None,
-        descended_from_type=_otio.Composable,
-        shallow_search=False,
-):
+        self: _otio.Composition,
+        search_range: opentime.TimeRange=None,
+        descended_from_type: Type[Any]=_otio.Composable,
+        shallow_search: bool=False,
+) -> Generator[_otio.SerializableObjectWithMetadata, None, None]:
     """
     Generator that returns each child contained in the composition in
     the order in which it is found.
@@ -49,7 +50,7 @@ def each_child(
     .. deprecated:: 0.14.0
         Use :meth:`children_if` instead.
 
-    :param TimeRange search_range: if specified, only children whose range overlaps with
+    :param search_range: if specified, only children whose range overlaps with
                                    the search range will be yielded.
     :param type descended_from_type: if specified, only children who are a descendent
                                      of the descended_from_type will be yielded.

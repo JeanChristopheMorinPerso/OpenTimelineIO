@@ -6,7 +6,7 @@ from .. import _otio
 
 
 @add_method(_otio.V2d)
-def __str__(self):
+def __str__(self: _otio.V2d) -> str:
     return 'V2d({}, {})'.format(
         self.x,
         self.y
@@ -14,7 +14,7 @@ def __str__(self):
 
 
 @add_method(_otio.V2d)
-def __repr__(self):
+def __repr__(self: _otio.V2d) -> str:
     return (
         'otio.schema.V2d('
         'x={}, '

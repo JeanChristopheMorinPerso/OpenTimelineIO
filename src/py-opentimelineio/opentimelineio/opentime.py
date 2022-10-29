@@ -53,12 +53,12 @@ def to_frames(rt: RationalTime, rate: Optional[float]=None) -> int:
     return rt.to_frames() if rate is None else rt.to_frames(rate)
 
 
-def to_seconds(rt: RationalTime):
+def to_seconds(rt: RationalTime) -> float:
     """Convert a :class:`~RationalTime` into float seconds"""
     return rt.to_seconds()
 
 
-def to_time_string(rt: RationalTime):
+def to_time_string(rt: RationalTime) -> str:
     """
     Convert this timecode to time as used by ffmpeg, formatted as
     ``hh:mm:ss`` where ss is an integer or decimal number.

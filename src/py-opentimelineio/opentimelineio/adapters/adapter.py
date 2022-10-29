@@ -10,7 +10,7 @@ from __future__ import annotations
 import inspect
 import collections
 import copy
-from typing import TYPE_CHECKING, Optional, List, Dict
+from typing import TYPE_CHECKING, Optional, List, Dict, Any
 
 from .. import (
     core,
@@ -84,9 +84,9 @@ class Adapter(plugins.PythonPlugin):
     def read_from_file(
         self,
         filepath: str,
-        media_linker_name=media_linker.MediaLinkingPolicy.ForceDefaultLinker,
-        media_linker_argument_map: Optional[Dict]=None,
-        hook_function_argument_map: Optional[Dict]=None,
+        media_linker_name: str=media_linker.MediaLinkingPolicy.ForceDefaultLinker,
+        media_linker_argument_map: Optional[Dict[str, Any]]=None,
+        hook_function_argument_map: Optional[Dict[str, Any]]=None,
         **adapter_argument_map
     ) -> 'Timeline':
         """Execute the read_from_file function on this adapter.

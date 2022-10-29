@@ -7,6 +7,7 @@ import inspect
 import logging
 import os
 from typing import TYPE_CHECKING, cast, Any
+from types import ModuleType
 
 # In some circumstances pkg_resources has bad performance characteristics.
 # Using the envirionment variable: $OTIO_DISABLE_PKG_RESOURCE_PLUGINS disables
@@ -27,7 +28,6 @@ from .. import (
 
 if TYPE_CHECKING:
     from ..adapters import Adapter
-    from types import ModuleType
     from opentimelineio.schema import SchemaDef
     from ..hooks import HookScript
     from ..media_linker import MediaLinker
@@ -48,7 +48,7 @@ OTIO_PLUGIN_TYPES = [
 def manifest_from_file(filepath: str) -> 'Manifest':
     """Read the .json file at filepath into a :py:class:`Manifest` object."""
 
-    result: Manifest = cast(Manifest, core.deserialize_json_from_file(filepath))
+    result: Manifest = cast('Manifest', core.deserialize_json_from_file(filepath))
     absfilepath = os.path.abspath(filepath)
     result.source_files.append(absfilepath)
     result._update_plugin_source(absfilepath)
@@ -89,7 +89,7 @@ class Manifest(core.SerializableObject):
     """
     _serializable_label = "PluginManifest.1"
 
-    def __init__(self):
+    def __init__(self: Manifest) -> None:
         super().__init__()
         self.adapters = []
         self.schemadefs = []
@@ -133,7 +133,7 @@ class Manifest(core.SerializableObject):
         "Sets of versions to downgrade schemas to."
     )
 
-    def extend(self, another_manifest: Manifest):
+    def extend(self, another_manifest: Manifest) -> None:
         """
         Aggregate another manifest's plugins into this one.
 
@@ -165,7 +165,7 @@ class Manifest(core.SerializableObject):
 
         self.source_files.extend(another_manifest.source_files)
 
-    def _update_plugin_source(self, path: str):
+    def _update_plugin_source(self, path: str) -> None:
         """Set the source file path for the manifest."""
 
         for thing in (
@@ -176,7 +176,7 @@ class Manifest(core.SerializableObject):
         ):
             thing._json_path = path
 
-    def from_filepath(self, suffix: str) -> Adapter:
+    def from_filepath(self, suffix: str) -> 'Adapter':
         """Return the adapter object associated with a given file suffix."""
 
         for adapter in self.adapters:
@@ -192,12 +192,12 @@ class Manifest(core.SerializableObject):
 
     # @TODO: (breaking change) this should search all plugins by default instead
     #        of just adapters
-    def from_name(self, name: str, kind_list: str="adapters") -> PythonPlugin:
+    def from_name(self, name: str, kind_list: str="adapters") -> 'PythonPlugin':
         """Return the plugin object associated with a given plugin name."""
 
         for thing in getattr(self, kind_list):
             if name == thing.name:
-                return thing
+                return cast('PythonPlugin', thing)
 
         raise exceptions.NotSupportedError(
             "Could not find plugin: '{}' in kind_list: '{}'."
@@ -363,6 +363,6 @@ def ActiveManifest(force_reload: bool=False) -> Manifest:
 
     global _MANIFEST
     if not _MANIFEST or force_reload:
-        _MANIFEST = cast(Manifest, load_manifest())
+        _MANIFEST = load_manifest()
 
-    return cast(Manifest, _MANIFEST)
+    return _MANIFEST

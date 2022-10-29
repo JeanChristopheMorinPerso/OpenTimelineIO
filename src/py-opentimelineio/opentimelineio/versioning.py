@@ -11,7 +11,7 @@ from . import (
 )
 
 
-def full_map():
+def full_map() -> dict[str, dict[str, dict[str, int]]]:
     """Return the full map of schema version sets, including core and plugins.
     Organized as follows:
 
@@ -45,7 +45,6 @@ def full_map():
         }
 
     :returns: full map of schema version sets, including core and plugins
-    :rtype: dict[str, dict[str, dict[str, int]]]
     """
 
     result = copy.deepcopy(plugins.ActiveManifest().version_manifests)
@@ -57,7 +56,7 @@ def full_map():
     return result
 
 
-def fetch_map(family, label):
+def fetch_map(family: str, label: str) -> dict[str, int]:
     """Fetch the version map for the given family and label.  OpenTimelineIO
     includes a built in family called "OTIO_CORE", this is compiled into the
     C++ core and represents the core interchange schemas of OpenTimelineIO.
@@ -75,10 +74,9 @@ def fetch_map(family, label):
             ...
         }
 
-    :param str family: family of labels (ie: "OTIO_CORE")
-    :param str label: label of schema-version map (ie: "0.15.0")
+    :param family: family of labels (ie: "OTIO_CORE")
+    :param label: label of schema-version map (ie: "0.15.0")
     :returns: a dictionary mapping Schema name to schema version
-    :rtype: dict[str, int]
     """
 
     if family == "OTIO_CORE":
