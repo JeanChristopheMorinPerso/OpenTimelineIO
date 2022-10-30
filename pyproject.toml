@@ -5,3 +5,8 @@ requires = [
     "cmake>=3.12",
 ]
 build-backend = "setuptools.build_meta"
+
+[tool.mypy]
+show_error_contexxt = true
+show_column_numbers = true
+show_error_codes = true

@@ -7,10 +7,10 @@
 
 from .python_plugin import (
     plugin_info_map,
-    PythonPlugin,
+    PythonPlugin as PythonPlugin,
 )
 
 from .manifest import (
     manifest_from_file,
-    ActiveManifest,
+    ActiveManifest as ActiveManifest,
 )
